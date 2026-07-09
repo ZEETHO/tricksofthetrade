@@ -90,6 +90,23 @@
     border:3px solid #f0e9dc; border-radius:14px; padding:14px; margin:10px 0}
   .rule-card .emoji{font-size:1.8rem}
   footer{ text-align:center; color:var(--muted); padding:20px; font-size:.85rem}
+  /* flashcards */
+  .cat-tabs{display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 16px}
+  .cat-tabs button{border:3px solid var(--sky); background:#fff; color:var(--sky); font-family:inherit;
+    font-weight:bold; padding:9px 14px; border-radius:999px; cursor:pointer; min-height:44px}
+  .cat-tabs button.active{background:var(--sky); color:#fff}
+  .flashcard{background:linear-gradient(160deg,#023047,#0a4a66); color:#fff; border-radius:18px;
+    padding:26px 22px; margin:12px 0; min-height:200px; display:flex; flex-direction:column;
+    justify-content:center; box-shadow:var(--shadow); cursor:pointer; user-select:none}
+  .flashcard .tag{display:inline-block; align-self:flex-start; background:var(--sun); color:var(--deep);
+    border-radius:999px; padding:3px 12px; font-weight:bold; font-size:.8rem; margin-bottom:12px}
+  .flashcard .front{font-size:1.5rem; font-weight:bold}
+  .flashcard .back{font-size:1.15rem; line-height:1.55; margin-top:8px; display:none}
+  .flashcard.flipped .back{display:block}
+  .flashcard.flipped .hint{display:none}
+  .flashcard .hint{margin-top:12px; font-size:.85rem; opacity:.7}
+  .card-nav{display:flex; gap:12px; flex-wrap:wrap; align-items:center}
+  .card-count{margin-left:auto; color:var(--muted); font-weight:bold}
   @media (prefers-reduced-motion: reduce){ *{animation:none!important; transition:none!important} }
 </style>
 </head>
@@ -107,6 +124,7 @@
   <button data-page="game">🎮 Trading Game</button>
   <button data-page="calc">🧮 Risk Calculator</button>
   <button data-page="quiz">❓ Quiz</button>
+  <button data-page="cards">🃏 Flashcards</button>
   <button data-page="rules">🛡️ Golden Rules</button>
 </nav>
 
@@ -207,6 +225,22 @@
     <div class="rule-card"><span class="emoji">🏛️</span><div><b>"Secret" signals usually aren't.</b> Politician trades looked exciting, but the edge disappears before the 45-day disclosure deadline. Test everything.</div></div>
     <div class="rule-card"><span class="emoji">📄</span><div><b>Paper trade for weeks before using real money.</b> If practice doesn't work, real money won't either.</div></div>
     <div class="rule-card"><span class="emoji">🐢</span><div><b>Slow is smooth, smooth is fast.</b> Most traders lose by rushing. Being patient IS the edge.</div></div>
+  </div>
+</section>
+
+<!-- ============ FLASHCARDS ============ -->
+<section class="page" id="page-cards">
+  <div class="card">
+    <h2>🃏 Trading Flashcards</h2>
+    <p>Tap a card to flip it and see the meaning. Switch categories with the tabs. Learn the words traders use — indicators, chart patterns, and strategies!</p>
+    <div class="cat-tabs" id="cat-tabs"></div>
+    <div id="flashcard-wrap"></div>
+    <div class="card-nav">
+      <button class="big-btn blue" id="fc-prev">⬅️ Prev</button>
+      <button class="big-btn" id="fc-next">Next ➡️</button>
+      <button class="big-btn red" id="fc-flip">🔄 Flip</button>
+      <span class="card-count" id="fc-count"></span>
+    </div>
   </div>
 </section>
 
@@ -507,8 +541,71 @@ function renderQuiz(){
   });
 }
 
+/* ---------- flashcards ---------- */
+const FLASHCARDS = {
+  indicators: [
+    {t:"EMA (Exponential Moving Average)", d:"A smooth line that follows the price and gives more weight to recent days. Faster than a simple average. The bot uses the 8-day and 21-day EMAs."},
+    {t:"8-day EMA", d:"The FAST shadow line. It hugs the price closely. When price rises back above it after a fall, that's the bot's reversal trigger."},
+    {t:"21-day EMA", d:"The SLOW shadow line. It moves more gently. The bot wants price to be BELOW this line — that means the stock is still in a downtrend."},
+    {t:"RSI (Relative Strength Index)", d:"A speed gauge from 0 to 100. Below 30 = 'oversold' (maybe too cheap), above 70 = 'overbought' (maybe too pricey). The bot liked 30–40."},
+    {t:"Volume", d:"How many shares traded that day. High volume on a move means lots of people agree with it. The bot required volume above its 20-day average."},
+    {t:"Drawdown", d:"How far a price has fallen from its recent high. The bot's setup needed a 20%+ drawdown — a stock that got 'hammered' and may bounce."},
+    {t:"Volatility", d:"How big and fast the price swings are. Calm = small swings, wild = big swings. High volatility can mean bigger risk."}
+  ],
+  patterns: [
+    {t:"Downtrend", d:"The price makes lower lows and lower highs — a staircase going down. The bot's setup looks for this first."},
+    {t:"Reversal", d:"When a falling price stops falling and starts climbing. The bot's improved entry: 'the fall happened, now it's turning up.'"},
+    {t:"Bounce", d:"A small upward jump inside a downtrend. Bounces are why the old strict rule (price between the EMAs AND RSI low) rarely happened."},
+    {t:"Breakout", d:"Price pushes past a level it couldn't cross before (like a ceiling). Can signal a new trend starting."},
+    {t:"Support", d:"A price floor where buyers keep showing up, so the price stops falling there."},
+    {t:"Resistance", d:"A price ceiling where sellers keep appearing, so the price stops rising there."},
+    {t:"Cup & Handle", d:"A 'U' shape (the cup) with a small dip (the handle) — a classic 'getting ready to rise' pattern."},
+    {t:"Head & Shoulders", d:"Three bumps: a small one, a big one, then a small one. Often means an uptrend is about to flip to a downtrend."}
+  ],
+  strategies: [
+    {t:"Mean Reversion", d:"The idea that price, after a big move away, tends to 'revert' back toward its average. Buy the dip, sell the rip. The bot's core idea."},
+    {t:"8/21 EMA Strategy", d:"Ian Dunlap's setup: wait for a 20%+ drop, price below both EMAs (downtrend), then buy when price reclaims the 8-day EMA."},
+    {t:"Reversal Entry (improved)", d:"The bot's fix to trade more often: separate the SETUP (big drop = value) from the TRIGGER (oversold, then turns up)."},
+    {t:"Strict Entry (original)", d:"The first spec: price between the EMAs AND RSI 30–40 on the same bar. Only ~4 trades in 8 years — too rare to use."},
+    {t:"Stop-Loss", d:"A pre-set sell price that limits your loss (the bot uses −3%). Your seatbelt. Set it BEFORE you buy."},
+    {t:"Trailing Stop", d:"A stop that follows the price up. The bot ratchets it to break-even at +12%, then trails 5% below the high."},
+    {t:"Take-Profit", d:"A pre-set target where you cash out. The bot takes the win at +20%."},
+    {t:"Edge Test", d:"The honesty check: compare your trades to random trades. If z-score > 2 with 100+ trades, maybe a real edge. The bot scored 0.29 = no edge."},
+    {t:"Walk-Forward", d:"Tune settings on old data, then test on NEW unseen data. If tuned doesn't beat fixed, the tuning was just noise (overfitting)."},
+    {t:"Overfitting", d:"Tweaking a strategy until the PAST looks perfect. The past doesn't repeat, so it usually fails live. A trap to avoid."},
+    {t:"Expectancy", d:"Average money made per trade: (win × win% ) − (loss × loss%). The bot wins only 27% of the time but wins bigger — so expectancy is positive."},
+    {t:"1% Risk Rule", d:"Never risk more than 1% of your money on one trade. Keeps you alive through losing streaks. The survival superpower."},
+    {t:"Paper Trading", d:"Practicing with fake money before risking real money. The bot's docs say do this for WEEKS first."},
+    {t:"Political / Congressional Signal", d:"Using senators' disclosed stock buys as a hint. The bot tested it: any edge vanishes before the 45-day disclosure rule. Test every 'secret'."}
+  ]
+};
+let fcCat = "indicators", fcIdx = 0;
+function renderFlashcards(){
+  const tabs = document.getElementById("cat-tabs");
+  tabs.innerHTML = Object.keys(FLASHCARDS).map(k=>{
+    const label = {indicators:"📊 Indicators", patterns:"📈 Chart Patterns", strategies:"♟️ Strategies"}[k];
+    return `<button class="${k===fcCat?'active':''}" data-cat="${k}">${label}</button>`;
+  }).join("");
+  tabs.querySelectorAll("button").forEach(b=>b.onclick=()=>{ fcCat=b.dataset.cat; fcIdx=0; renderFlashcards(); });
+  const list = FLASHCARDS[fcCat];
+  const c = list[fcIdx];
+  const wrap = document.getElementById("flashcard-wrap");
+  wrap.innerHTML = `<div class="flashcard" id="fc" onclick="this.classList.toggle('flipped')">
+      <span class="tag">${fcCat.toUpperCase()}</span>
+      <div class="front">${c.t}</div>
+      <div class="back">${c.d}</div>
+      <div class="hint">👆 Tap the card to reveal the meaning</div>
+    </div>`;
+  document.getElementById("fc-count").textContent = `${fcIdx+1} / ${list.length}`;
+  document.getElementById("fc-prev").disabled = fcIdx===0;
+  document.getElementById("fc-next").disabled = fcIdx===list.length-1;
+}
+document.getElementById("fc-prev").onclick = ()=>{ if(fcIdx>0){fcIdx--; renderFlashcards();} };
+document.getElementById("fc-next").onclick = ()=>{ if(fcIdx<FLASHCARDS[fcCat].length-1){fcIdx++; renderFlashcards();} };
+document.getElementById("fc-flip").onclick = ()=>{ const el=document.getElementById("fc"); if(el) el.classList.toggle("flipped"); };
+
 /* ---------- boot ---------- */
-renderLessons(); renderQuiz(); newGame(); refreshStars();
+renderLessons(); renderQuiz(); newGame(); refreshStars(); renderFlashcards();
 </script>
 </body>
 </html>
