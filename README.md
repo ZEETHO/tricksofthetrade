@@ -27,9 +27,13 @@ learn before risking real money.
 
 ## How to run
 
+**Option A — open it live (no download):**
+👉 https://zeetho.github.io/tricksofthetrade/
+
+**Option B — run the file offline:**
 No install, no build, no server.
 
-1. Download `Tricks of the Trade.html`.
+1. Download `index.html` (the app).
 2. Double-click it (or open it in any web browser).
 
 That's it. It works fully offline.
