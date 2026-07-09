@@ -193,7 +193,7 @@
     <h2>🧮 Risk Calculator</h2>
     <p>Real traders never ask "how much can I make?" first. They ask <b>"how much could I lose?"</b> This calculator uses your bot's exact formula: risk only <b>1% of your money</b> on any single trade.</p>
     <div class="calc-row"><label>💰 How much money do you have?</label><input type="number" id="c-equity" value="100" min="1"></div>
-    <div class="calc-row"><label>💲 Price of one share?</label><input type="number" id="c-price" value="50" min="0.01" step="0.01"></div>
+    <div class="calc-row"><label>💲 Price of one share?</label><input type="number" id="c-price" value="50" min="0.01" step="0.01"><button class="big-btn blue" style="padding:10px 16px;font-size:.9rem" onclick="fillLivePrice()">📡 Live</button></div>
     <div class="calc-row"><label>🛑 Stop-loss (% below buy price)?</label><input type="number" id="c-stop" value="3" min="0.5" step="0.5"></div>
     <button class="big-btn" onclick="calcRisk()">Calculate! ✨</button>
     <div class="result-box" id="calc-out">Fill in the boxes and press Calculate!</div>
@@ -258,6 +258,7 @@
     </div>
     <div class="calc-row" id="live-key-row" style="display:none"><label>🔑 Your free API key</label>
       <input type="password" id="live-key" placeholder="paste your free key" style="width:240px">
+      <button class="big-btn" style="background:var(--grass);box-shadow:0 5px 0 #1f7a70;padding:10px 16px;font-size:.9rem" onclick="useDemoKey()">✨ Use demo key</button>
     </div>
     <div class="calc-row"><label>🏷️ Ticker to watch</label>
       <input type="text" id="live-symbol" value="AAPL" style="width:120px;text-transform:uppercase">
@@ -265,6 +266,7 @@
     <button class="big-btn" onclick="saveLive()">💾 Save settings</button>
     <button class="big-btn blue" onclick="testLive()">🔌 Test connection</button>
     <div class="result-box" id="live-out">Set a source and press "Test connection" to try it. Simulator needs nothing!</div>
+    <p style="margin-top:10px;font-size:.9rem;color:var(--muted)">✨ <b>Use demo key</b> fills Twelve Data's free sample key so you can see a <b>real live price right now with zero signup</b> (works for AAPL and a few sample tickers). For your own ticker or heavier use, grab a free key from the links below.</p>
 
     <h3 style="margin-top:18px">🆓 Where to get a FREE key</h3>
     <ul>
@@ -706,6 +708,35 @@ document.getElementById("btn-next").addEventListener("click", async ()=>{
   }
 }, true);
 
+function useDemoKey(){
+  const sel = document.getElementById("live-source");
+  sel.value = "twelvedata";
+  sel.dispatchEvent(new Event("change"));
+  document.getElementById("live-key").value = "demo";
+  document.getElementById("live-symbol").value = "AAPL";
+  document.getElementById("live-out").innerHTML = "✨ Demo key loaded for <b>Twelve Data / AAPL</b>. Press <b>Test connection</b> to see a real live price — no signup needed!";
+}
+async function fillLivePrice(){
+  const c = liveCfg();
+  const out = document.getElementById("calc-out");
+  if(!c.source || c.source==="sim"){
+    out.innerHTML = "📡 Turn on a live source in the <b>Live Data</b> tab first (or press ✨ Use demo key there). Then come back and hit 📡 Live.";
+    return;
+  }
+  if(c.source!=="sim" && !c.key){
+    out.innerHTML = "🔑 No key saved. Open the Live Data tab and save your key (or use the demo key).";
+    return;
+  }
+  try {
+    const p = await fetchLivePrice(c);
+    if(p && p>0){
+      document.getElementById("c-price").value = p.toFixed(2);
+      out.innerHTML = `📡 Live price for <b>${c.symbol}</b> filled: <b>$${p.toFixed(2)}</b>. Now press <b>Calculate!</b> to size your trade.`;
+    } else throw new Error("no price");
+  } catch(e){
+    out.innerHTML = `❌ Couldn't fetch live price: ${e.message}. Check your Live Data settings.`;
+  }
+}
 /* ---------- boot ---------- */
 renderLessons(); renderQuiz(); newGame(); refreshStars(); renderFlashcards(); applyLiveUI();
 </script>
