@@ -107,6 +107,14 @@
   .flashcard .hint{margin-top:12px; font-size:.85rem; opacity:.7}
   .card-nav{display:flex; gap:12px; flex-wrap:wrap; align-items:center}
   .card-count{margin-left:auto; color:var(--muted); font-weight:bold}
+  /* live market ribbon (CHRONICLE-style server feed) */
+  #ribbon{display:flex; gap:10px; flex-wrap:wrap; padding:10px 16px; background:#04263b; align-items:center}
+  #ribbon .tag{color:#90e0ef; font-weight:bold; font-size:.8rem; margin-right:6px}
+  .ribbon-item{background:#0a3a57; color:#fff; border-radius:999px; padding:6px 12px; font-size:.9rem; font-weight:bold}
+  .ribbon-item .up{color:#7CFC9A} .ribbon-item .down{color:#ff8d7a}
+  #ribbon .status{margin-left:auto; font-size:.75rem; color:#9fb3c8}
+  @keyframes pulse{0%{opacity:.4}50%{opacity:1}100%{opacity:.4}}
+  #ribbon .live-dot{width:9px;height:9px;border-radius:50%;background:#2a9d8f;display:inline-block;animation:pulse 1.6s infinite;margin-right:5px}
   @media (prefers-reduced-motion: reduce){ *{animation:none!important; transition:none!important} }
 </style>
 </head>
@@ -117,6 +125,13 @@
   <span>Learn to trade the smart, safe way!</span>
   <span class="coins">⭐ <span id="stars">0</span> stars</span>
 </header>
+
+<div id="ribbon">
+  <span class="tag">📡 LIVE</span>
+  <span id="ribbon-quotes"></span>
+  <span id="ribbon-macro"></span>
+  <span class="status" id="ribbon-status"><span class="live-dot"></span>connecting…</span>
+</div>
 
 <nav>
   <button data-page="home" class="active">🏠 Home</button>
@@ -737,8 +752,43 @@ async function fillLivePrice(){
     out.innerHTML = `❌ Couldn't fetch live price: ${e.message}. Check your Live Data settings.`;
   }
 }
+/* ---------- live market ribbon (CHRONICLE-style server feed) ---------- */
+const RIBBON_SYMBOLS = ["AAPL","MSFT","NVDA","SPY"];
+const RIBBON_MACRO = ["VIXCLS","DGS10","T10Y2Y"];
+const RIBBON_MACRO_LABEL = { VIXCLS:"VIX", DGS10:"10Y", T10Y2Y:"2s10s" };
+function fmt(n){ return (n==null||isNaN(n)) ? "—" : (n>=1000? n.toFixed(0) : n.toFixed(2)); }
+async function refreshRibbon(){
+  const status = document.getElementById("ribbon-status");
+  try {
+    const [q, m] = await Promise.all([
+      fetch("/api/quote?symbols="+RIBBON_SYMBOLS.join(",")).then(r=>r.ok?r.json():null).catch(()=>null),
+      fetch("/api/macro?series="+RIBBON_MACRO.join(",")).then(r=>r.ok?r.json():null).catch(()=>null)
+    ]);
+    const qEl = document.getElementById("ribbon-quotes");
+    if(q){
+      qEl.innerHTML = RIBBON_SYMBOLS.map(s=>{
+        const d = q[s]; if(!d||d.c==null) return `<span class="ribbon-item">${s} —</span>`;
+        const cls = (d.dp>=0)?"up":"down"; const arr = d.dp>=0?"▲":"▼";
+        return `<span class="ribbon-item">${s} $${fmt(d.c)} <span class="${cls}">${arr}${Math.abs(d.dp).toFixed(2)}%</span></span>`;
+      }).join("");
+    } else { qEl.innerHTML = `<span class="ribbon-item">quotes off</span>`; }
+    const mEl = document.getElementById("ribbon-macro");
+    if(m){
+      mEl.innerHTML = RIBBON_MACRO.map(id=>{
+        const v = m[id];
+        return `<span class="ribbon-item">${RIBBON_MACRO_LABEL[id]} ${fmt(v)}</span>`;
+      }).join("");
+    } else { mEl.innerHTML = `<span class="ribbon-item">macro off</span>`; }
+    const live = (q && Object.values(q).some(d=>d&&d.c!=null)) || (m && Object.values(m).some(v=>v!=null));
+    status.innerHTML = live ? `<span class="live-dot"></span>live` : `<span class="live-dot" style="background:#e76f51"></span>server keys not set — simulator only`;
+  } catch(e){
+    status.innerHTML = `<span class="live-dot" style="background:#e76f51"></span>live feed unavailable`;
+  }
+}
+
 /* ---------- boot ---------- */
 renderLessons(); renderQuiz(); newGame(); refreshStars(); renderFlashcards(); applyLiveUI();
+refreshRibbon(); setInterval(refreshRibbon, 20000);
 </script>
 </body>
 </html>

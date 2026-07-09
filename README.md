@@ -27,16 +27,38 @@ learn before risking real money.
 
 ## How to run
 
-**Option A — open it live (no download):**
+**Option A — open it live (no download, no keys):**
 👉 https://zeetho.github.io/tricksofthetrade/
+Runs the teaching app with the built-in simulator. No setup.
 
 **Option B — run the file offline:**
-No install, no build, no server.
+No install, no build, no server. Just double-click `index.html`. Works fully offline.
 
-1. Download `index.html` (the app).
-2. Double-click it (or open it in any web browser).
+**Option C — run the LIVE server (real-time quotes + macro ribbon):**
+Mixes in CHRONICLE's live-data approach: a tiny Node server keeps your API keys
+**server-side** (never exposed to the browser) and feeds a live market ribbon
+(quotes + VIX / yields) into the app. The app still works with no keys — it
+just shows "simulator only".
 
-That's it. It works fully offline.
+```bash
+cd tricksofthetrade
+cp .env.example .env        # paste your FREE Finnhub + FRED keys
+node server.js              # no npm install needed — Node built-ins only
+# open http://localhost:3000
+```
+
+| Key | Powers | Free? | Where |
+|-----|--------|-------|-------|
+| `FINNHUB_API_KEY` | Live equity/ETF quotes ribbon | ✅ free | https://finnhub.io/register |
+| `FRED_API_KEY` | VIX, 10Y yield, 2s10s spread | ✅ free | https://fredaccount.stlouisfed.org/apikeys |
+
+The server mirrors CHRONICLE's proxy routes (`/api/quote`, `/api/macro`) so keys
+stay private. Without keys, the ribbon shows "off" and the simulator carries on.
+
+> Note: the live server (Option C) is for local use. The GitHub Pages site
+> (Option A) serves the static app only — it cannot run a server, so its ribbon
+> stays in simulator mode. For a hosted live version you'd deploy the server
+> (e.g. Render, Fly.io, Railway) with the keys as environment variables.
 
 ## Source
 

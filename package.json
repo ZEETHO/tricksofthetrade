@@ -1,0 +1,13 @@
+{
+  "name": "tricksofthetrade",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tricks of the Trade — kid-friendly interactive trading trainer with optional live market data (CHRONICLE-style server proxy).",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
