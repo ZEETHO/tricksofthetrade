@@ -125,6 +125,7 @@
   <button data-page="calc">🧮 Risk Calculator</button>
   <button data-page="quiz">❓ Quiz</button>
   <button data-page="cards">🃏 Flashcards</button>
+  <button data-page="live">📡 Live Data</button>
   <button data-page="rules">🛡️ Golden Rules</button>
 </nav>
 
@@ -241,6 +242,36 @@
       <button class="big-btn red" id="fc-flip">🔄 Flip</button>
       <span class="card-count" id="fc-count"></span>
     </div>
+  </div>
+<!-- ============ LIVE DATA ============ -->
+<section class="page" id="page-live">
+  <div class="card">
+    <h2>📡 Live Data Settings</h2>
+    <p>By default the game uses a <b>built-in practice simulator</b> — no account, no key, always works. If you want to see <b>real current prices</b>, turn on a live source below and paste a <b>free</b> API key (get one from the links). Your key is stored only in <b>this browser</b> — it is never sent anywhere except the data provider.</p>
+
+    <div class="calc-row"><label>🎚️ Data source</label>
+      <select id="live-source" style="font-family:inherit;font-size:1rem;padding:10px;border:3px solid var(--sky);border-radius:12px">
+        <option value="sim">Practice Simulator (no key)</option>
+        <option value="twelvedata">Twelve Data (free key)</option>
+        <option value="finnhub">Finnhub (free key)</option>
+      </select>
+    </div>
+    <div class="calc-row" id="live-key-row" style="display:none"><label>🔑 Your free API key</label>
+      <input type="password" id="live-key" placeholder="paste your free key" style="width:240px">
+    </div>
+    <div class="calc-row"><label>🏷️ Ticker to watch</label>
+      <input type="text" id="live-symbol" value="AAPL" style="width:120px;text-transform:uppercase">
+    </div>
+    <button class="big-btn" onclick="saveLive()">💾 Save settings</button>
+    <button class="big-btn blue" onclick="testLive()">🔌 Test connection</button>
+    <div class="result-box" id="live-out">Set a source and press "Test connection" to try it. Simulator needs nothing!</div>
+
+    <h3 style="margin-top:18px">🆓 Where to get a FREE key</h3>
+    <ul>
+      <li><b>Twelve Data</b> — <span style="word-break:break-all">https://twelvedata.com/pricing</span> → free tier, ~800 requests/day. Works right in your browser (no server needed).</li>
+      <li><b>Finnhub</b> — <span style="word-break:break-all">https://finnhub.io/register</span> → free tier, 60 requests/min. Also has a free congressional-trades endpoint.</li>
+    </ul>
+    <div class="callout warn">⚠️ These free tiers are for <b>learning</b>. They have daily limits — a whole classroom hitting them at once will hit the cap. Yahoo/full real-time feeds need paid plans and a backend; for teaching, the simulator + a free key per student is the safe way.</div>
   </div>
 </section>
 
@@ -604,8 +635,79 @@ document.getElementById("fc-prev").onclick = ()=>{ if(fcIdx>0){fcIdx--; renderFl
 document.getElementById("fc-next").onclick = ()=>{ if(fcIdx<FLASHCARDS[fcCat].length-1){fcIdx++; renderFlashcards();} };
 document.getElementById("fc-flip").onclick = ()=>{ const el=document.getElementById("fc"); if(el) el.classList.toggle("flipped"); };
 
+/* ---------- live data ---------- */
+const LS_LIVE = "tricksofthetrade_live";
+function liveCfg(){ try { return JSON.parse(localStorage.getItem(LS_LIVE)) || {source:"sim",key:"",symbol:"AAPL"}; } catch(e){ return {source:"sim",key:"",symbol:"AAPL"}; } }
+function applyLiveUI(){
+  const c = liveCfg();
+  document.getElementById("live-source").value = c.source;
+  document.getElementById("live-key").value = c.key || "";
+  document.getElementById("live-symbol").value = c.symbol || "AAPL";
+  document.getElementById("live-key-row").style.display = (c.source==="sim") ? "none" : "flex";
+}
+document.getElementById("live-source").addEventListener("change", e=>{
+  document.getElementById("live-key-row").style.display = (e.target.value==="sim") ? "none" : "flex";
+});
+function saveLive(){
+  const c = { source:document.getElementById("live-source").value,
+              key:document.getElementById("live-key").value.trim(),
+              symbol:document.getElementById("live-symbol").value.trim().toUpperCase() || "AAPL" };
+  localStorage.setItem(LS_LIVE, JSON.stringify(c));
+  // if live, tell the game to use it
+  G.liveSource = c;
+  document.getElementById("live-out").innerHTML = `💾 Saved! Source: <b>${c.source==="sim"?"Practice Simulator":" "+c.source}</b>${c.source!=="sim"?` · ticker <b>${c.symbol}</b>`:""}. ${c.source!=="sim"?"The Trading Game will show this ticker's live price when you press Next Day.":"The game uses the built-in simulator."}`;
+}
+async function fetchLivePrice(c){
+  const sym = c.symbol || "AAPL";
+  if(c.source==="twelvedata"){
+    const u = `https://api.twelvedata.com/price?symbol=${encodeURIComponent(sym)}&apikey=${encodeURIComponent(c.key||"demo")}`;
+    const r = await fetch(u); const j = await r.json();
+    if(j && j.price) return parseFloat(j.price);
+    throw new Error(j.message || "No price returned");
+  }
+  if(c.source==="finnhub"){
+    const u = `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(sym)}&token=${encodeURIComponent(c.key||"demo")}`;
+    const r = await fetch(u); const j = await r.json();
+    if(j && typeof j.c==="number" && j.c>0) return parseFloat(j.c);
+    throw new Error("No price (check key/symbol)");
+  }
+  return null; // sim
+}
+async function testLive(){
+  const c = { source:document.getElementById("live-source").value,
+              key:document.getElementById("live-key").value.trim(),
+              symbol:document.getElementById("live-symbol").value.trim().toUpperCase() || "AAPL" };
+  const out = document.getElementById("live-out");
+  if(c.source==="sim"){ out.innerHTML = "✅ Practice Simulator is always ready — no connection needed!"; return; }
+  if(!c.key){ out.innerHTML = "🔑 Please paste your free API key first."; return; }
+  out.innerHTML = "⏳ Connecting to "+c.source+" for "+c.symbol+"…";
+  try {
+    const p = await fetchLivePrice(c);
+    out.innerHTML = `✅ Connected! Live price for <b>${c.symbol}</b>: <b>$${p.toFixed(2)}</b>. Save it, then open the Trading Game and press Next Day to use live prices.`;
+    localStorage.setItem(LS_LIVE, JSON.stringify(c));
+    G.liveSource = c;
+  } catch(e){
+    out.innerHTML = `❌ Connection failed: ${e.message}. Double-check the key and ticker, or switch back to the simulator.`;
+  }
+}
+// make the game optionally pull a live price on Next Day
+const _origNext = document.getElementById("btn-next").onclick;
+document.getElementById("btn-next").addEventListener("click", async ()=>{
+  const c = liveCfg();
+  if(c.source && c.source!=="sim" && G && G.day < G.prices.length-1){
+    try {
+      const p = await fetchLivePrice(c);
+      if(p && p>0){
+        // replace the "current day" simulated price with live price so EMAs stay meaningful
+        G.prices[G.day] = p;
+        G.livePriceUsed = true;
+      }
+    } catch(e){ /* fall back to simulated price silently */ }
+  }
+}, true);
+
 /* ---------- boot ---------- */
-renderLessons(); renderQuiz(); newGame(); refreshStars(); renderFlashcards();
+renderLessons(); renderQuiz(); newGame(); refreshStars(); renderFlashcards(); applyLiveUI();
 </script>
 </body>
 </html>
