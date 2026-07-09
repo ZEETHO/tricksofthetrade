@@ -185,7 +185,7 @@
   <div class="card">
     <h2>🎮 The Trading Game</h2>
     <p>You have <b>$100 of pretend money</b>. The chart shows a stock's price with the <span style="color:#ffb703;font-weight:bold">8-day EMA (yellow)</span> and <span style="color:#90e0ef;font-weight:bold">21-day EMA (blue)</span>. Press <b>Next Day</b> to move time forward. Buy low, protect yourself with the auto stop-loss, and try to grow your camp fund!</p>
-    <div class="callout tip">🎯 Strategy hint from your bot: look for the price to dip <b>below both EMA lines</b> and then climb back above the yellow (8 EMA) line — that's the "reversal" signal!</div>
+    <div class="callout tip">🎯 Strategy hint from your bot: look for the price to dip <b>below both EMA lines</b> and then climb back above the yellow (8 EMA) line — that's the "reversal" signal! Press <b>👁 Show signals</b> to see green arrows marking where the bot's rules <b>would have entered</b>, with faint lines for the <b>projected exit ladder</b> (stop −3%, break-even +12%, target +20%).</div>
     <canvas id="chart" width="900" height="380"></canvas>
     <div class="hud">
       <div class="stat"><div class="v" id="g-cash">$100.00</div><div class="l">💰 Cash</div></div>
@@ -199,6 +199,7 @@
       <button class="big-btn" id="btn-buy">🛒 Buy</button>
       <button class="big-btn red" id="btn-sell" disabled>💸 Sell</button>
       <button class="big-btn" style="background:var(--lav); box-shadow:0 5px 0 #6f5fa3" id="btn-reset">🔄 New Game</button>
+      <button class="big-btn blue" id="btn-signals" style="background:#2a9d8f;box-shadow:0 5px 0 #1f7a70">👁 Show signals</button>
     </div>
     <div class="result-box" id="game-msg">Press "Next Day" a few times to watch the price move. When you buy, a safety stop-loss is set 3% below your price automatically — just like the real bot!</div>
   </div>
@@ -402,7 +403,7 @@ function finishLesson(i){
 const cv = document.getElementById("chart"), ctx = cv.getContext("2d");
 let G;
 function newGame(){
-  G = { prices:[], day:0, cash:100, shares:0, buyPrice:0, stop:0, peak:0, over:false };
+  G = { prices:[], day:0, cash:100, shares:0, buyPrice:0, stop:0, peak:0, over:false, showSignals:true };
   let p = 40 + Math.random()*30;
   let drift = -0.15, vol = 1.2;
   // pre-generate 240 days with regime shifts (fall then recover chances)
@@ -423,7 +424,25 @@ function ema(arr, n){
 }
 function price(){ return G.prices[G.day]; }
 function equity(){ return G.cash + G.shares*price(); }
-function msg(t){ document.getElementById("game-msg").innerHTML = t; }
+
+// Scan the FULL price history for every point the bot's reversal entry WOULD have fired,
+// plus the projected exit ladder (stop -3%, break-even +12%, target +20%).
+function computeHypotheticals(){
+  const arr = G.prices, n = arr.length;
+  const e8 = ema(arr, 8), e21 = ema(arr, 21);
+  const sigs = [];
+  for(let i=21; i<n-1; i++){
+    const below = arr[i-1] < e8[i-1] && arr[i-1] < e21[i-1];   // was below both EMAs
+    const reclaim = arr[i] >= e8[i];                            // now back above fast EMA
+    const fell = arr[i] <= arr[i-1]*1.20;                       // came off at least ~20% from a recent high (cheap)
+    if(below && reclaim && fell){
+      const entry = arr[i];
+      sigs.push({ day:i, entry,
+        stop: entry*0.97, be: entry*1.12, target: entry*1.20 });
+    }
+  }
+  return sigs;
+}
 function updateGame(){
   const p = price();
   document.getElementById("g-cash").textContent = "$"+G.cash.toFixed(2);
@@ -460,6 +479,24 @@ function drawChart(){
     ctx.moveTo(40,Y(G.stop)); ctx.lineTo(W-20,Y(G.stop)); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle="#2a9d8f"; ctx.fillText("bought $"+G.buyPrice.toFixed(2), W-140, Y(G.buyPrice)-5);
     ctx.fillStyle="#e76f51"; ctx.fillText("stop $"+G.stop.toFixed(2), W-140, Y(G.stop)+14);
+  }
+  // hypothetical entry / exit signals (the bot's rules, drawn as a learning overlay)
+  if(G.showSignals){
+    const sigs = computeHypotheticals();
+    const startDay = Math.max(0, G.day-90);
+    sigs.forEach(s=>{
+      if(s.day < startDay || s.day > G.day) return;          // only show signals already in view & past
+      const xi = X(s.day - startDay);
+      // entry arrow
+      ctx.fillStyle="#7CFC9A"; ctx.beginPath();
+      ctx.moveTo(xi, Y(s.entry)-10); ctx.lineTo(xi-7, Y(s.entry)-22); ctx.lineTo(xi+7, Y(s.entry)-22); ctx.closePath(); ctx.fill();
+      // projected exit ladder (faint dashed, full width from arrow)
+      ctx.setLineDash([4,4]); ctx.lineWidth=1.5;
+      ctx.strokeStyle="rgba(124,252,154,.7)"; ctx.beginPath(); ctx.moveTo(xi,Y(s.stop)); ctx.lineTo(W-20,Y(s.stop)); ctx.stroke();
+      ctx.strokeStyle="rgba(255,183,3,.7)"; ctx.beginPath(); ctx.moveTo(xi,Y(s.be)); ctx.lineTo(W-20,Y(s.be)); ctx.stroke();
+      ctx.strokeStyle="rgba(46,157,143,.85)"; ctx.beginPath(); ctx.moveTo(xi,Y(s.target)); ctx.lineTo(W-20,Y(s.target)); ctx.stroke();
+      ctx.setLineDash([]); ctx.lineWidth=2;
+    });
   }
   // last price dot
   ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(X(view.length-1),Y(view[view.length-1]),5,0,7); ctx.fill();
@@ -507,6 +544,12 @@ document.getElementById("btn-sell").onclick = ()=>{
   updateGame();
 };
 document.getElementById("btn-reset").onclick = newGame;
+document.getElementById("btn-signals").onclick = ()=>{
+  G.showSignals = !G.showSignals;
+  document.getElementById("btn-signals").textContent = G.showSignals ? "👁 Hide signals" : "👁 Show signals";
+  drawChart();
+  if(!G.showSignals) msg("Signals hidden. Turn them back on to see where the bot's rules would have entered and exited.");
+};
 function endGame(){
   G.over = true;
   if(G.shares>0){ G.cash += G.shares*price(); G.shares=0; }
