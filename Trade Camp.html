@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trade Camp 🏕️ — Learn to Trade the Smart Way</title>
+<style>
+  :root{
+    --bg:#fef9ef; --card:#ffffff; --ink:#2d3142; --muted:#6b7280;
+    --sun:#ffb703; --sky:#219ebc; --deep:#023047; --grass:#2a9d8f;
+    --berry:#e76f51; --lav:#8e7dbe;
+    --radius:20px; --shadow:0 6px 0 rgba(2,48,71,.12);
+    font-size:16px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  body{
+    font-family:"Comic Sans MS","Chalkboard SE","Segoe UI",system-ui,sans-serif;
+    background:var(--bg); color:var(--ink); min-height:100vh; padding-bottom:60px;
+  }
+  header{
+    background:var(--deep); color:#fff; padding:18px 24px; display:flex;
+    align-items:center; gap:14px; flex-wrap:wrap;
+  }
+  header h1{font-size:1.5rem}
+  header .coins{margin-left:auto; background:var(--sun); color:var(--deep);
+    padding:8px 16px; border-radius:999px; font-weight:bold; font-size:1rem}
+  nav{display:flex; gap:8px; padding:14px 20px; flex-wrap:wrap; background:#fff;
+    border-bottom:3px solid #eee; position:sticky; top:0; z-index:10}
+  nav button{
+    border:3px solid var(--deep); background:#fff; color:var(--deep);
+    padding:10px 18px; border-radius:999px; font-family:inherit; font-size:1rem;
+    font-weight:bold; cursor:pointer; min-height:44px; transition:transform .1s;
+  }
+  nav button:hover{transform:translateY(-2px)}
+  nav button.active{background:var(--sky); color:#fff; border-color:var(--sky)}
+  main{max-width:960px; margin:0 auto; padding:24px 20px}
+  .page{display:none}
+  .page.show{display:block; animation:pop .25s ease}
+  @keyframes pop{from{opacity:0; transform:translateY(8px)}to{opacity:1; transform:none}}
+  .card{background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:22px; margin-bottom:18px; border:3px solid #f0e9dc}
+  .card h2{margin-bottom:10px}
+  .card h3{margin:12px 0 6px}
+  .card p, .card li{line-height:1.55; margin-bottom:8px}
+  .card ul, .card ol{padding-left:24px; margin-bottom:8px}
+  .big-btn{
+    display:inline-block; border:none; background:var(--grass); color:#fff;
+    font-family:inherit; font-size:1.1rem; font-weight:bold; padding:14px 26px;
+    border-radius:999px; cursor:pointer; box-shadow:0 5px 0 #1f7a70; min-height:48px;
+  }
+  .big-btn:active{transform:translateY(3px); box-shadow:0 2px 0 #1f7a70}
+  .big-btn.red{background:var(--berry); box-shadow:0 5px 0 #b8503a}
+  .big-btn.red:active{box-shadow:0 2px 0 #b8503a}
+  .big-btn.blue{background:var(--sky); box-shadow:0 5px 0 #17708f}
+  .big-btn.blue:active{box-shadow:0 2px 0 #17708f}
+  .big-btn:disabled{background:#cbd5d1; box-shadow:0 5px 0 #a8b5b0; cursor:not-allowed}
+  .badge{display:inline-block; background:var(--sun); color:var(--deep);
+    border-radius:999px; padding:4px 12px; font-weight:bold; font-size:.85rem; margin:2px}
+  .lesson-nav{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px}
+  .lesson-nav button{
+    border:3px solid var(--lav); background:#fff; color:var(--lav); font-family:inherit;
+    font-weight:bold; padding:10px 14px; border-radius:14px; cursor:pointer; min-height:44px;
+  }
+  .lesson-nav button.done{background:var(--grass); border-color:var(--grass); color:#fff}
+  .lesson-nav button.current{background:var(--lav); color:#fff}
+  .callout{border-radius:14px; padding:14px 16px; margin:10px 0; font-weight:bold}
+  .callout.warn{background:#ffe8d6; border:3px dashed var(--berry)}
+  .callout.tip{background:#e0f2f1; border:3px dashed var(--grass)}
+  .quiz-opt{display:block; width:100%; text-align:left; margin:8px 0; padding:14px;
+    border-radius:14px; border:3px solid var(--sky); background:#fff; font-family:inherit;
+    font-size:1rem; cursor:pointer; min-height:48px}
+  .quiz-opt.correct{background:#c8f7dc; border-color:var(--grass)}
+  .quiz-opt.wrong{background:#ffd7cc; border-color:var(--berry)}
+  canvas{width:100%; border-radius:14px; background:#04263b; display:block}
+  .hud{display:flex; gap:12px; flex-wrap:wrap; margin:14px 0}
+  .hud .stat{flex:1; min-width:130px; background:#fff; border:3px solid #f0e9dc;
+    border-radius:14px; padding:10px 14px; text-align:center}
+  .hud .stat .v{font-size:1.3rem; font-weight:bold}
+  .hud .stat .l{font-size:.8rem; color:var(--muted)}
+  .controls{display:flex; gap:12px; flex-wrap:wrap; margin-top:14px}
+  .calc-row{display:flex; gap:10px; align-items:center; margin:10px 0; flex-wrap:wrap}
+  .calc-row label{font-weight:bold; min-width:220px}
+  .calc-row input{font-family:inherit; font-size:1.1rem; padding:10px; width:130px;
+    border:3px solid var(--sky); border-radius:12px}
+  .result-box{background:var(--deep); color:#fff; border-radius:14px; padding:16px;
+    margin-top:12px; font-size:1.05rem; line-height:1.6}
+  .progressbar{height:18px; background:#eee; border-radius:999px; overflow:hidden; margin:8px 0}
+  .progressbar>div{height:100%; background:var(--grass); transition:width .4s}
+  .rule-card{display:flex; gap:12px; align-items:flex-start; background:#fff;
+    border:3px solid #f0e9dc; border-radius:14px; padding:14px; margin:10px 0}
+  .rule-card .emoji{font-size:1.8rem}
+  footer{ text-align:center; color:var(--muted); padding:20px; font-size:.85rem}
+  @media (prefers-reduced-motion: reduce){ *{animation:none!important; transition:none!important} }
+</style>
+</head>
+<body>
+<header>
+  <span style="font-size:2rem">🏕️</span>
+  <h1>Trade Camp</h1>
+  <span>Learn to trade the smart, safe way!</span>
+  <span class="coins">⭐ <span id="stars">0</span> stars</span>
+</header>
+
+<nav>
+  <button data-page="home" class="active">🏠 Home</button>
+  <button data-page="learn">📚 Learn</button>
+  <button data-page="game">🎮 Trading Game</button>
+  <button data-page="calc">🧮 Risk Calculator</button>
+  <button data-page="quiz">❓ Quiz</button>
+  <button data-page="rules">🛡️ Golden Rules</button>
+</nav>
+
+<main>
+
+<!-- ============ HOME ============ -->
+<section class="page show" id="page-home">
+  <div class="card">
+    <h2>Welcome to Trade Camp! 🎉</h2>
+    <p>This is your very own trading school. Everything here comes from <b>real research</b> on your trading bot — the 8/21 EMA strategy, smart risk rules, and honest tests that tell you the truth about what works.</p>
+    <p>Here's your adventure map:</p>
+    <ol>
+      <li><b>📚 Learn</b> — 6 short lessons (earn a star for each!)</li>
+      <li><b>🎮 Trading Game</b> — practice with pretend money on a real-feeling chart</li>
+      <li><b>🧮 Risk Calculator</b> — the #1 tool real traders use</li>
+      <li><b>❓ Quiz</b> — prove you know your stuff</li>
+      <li><b>🛡️ Golden Rules</b> — the rules that keep your money safe</li>
+    </ol>
+    <div class="callout tip">💡 Remember: this is all <b>practice money</b>. Real traders practice for weeks before using even one real dollar!</div>
+    <button class="big-btn" onclick="go('learn')">Start Learning! 🚀</button>
+  </div>
+  <div class="card">
+    <h3>Your Progress</h3>
+    <div class="progressbar"><div id="progress-fill" style="width:0%"></div></div>
+    <p id="progress-text">0 of 8 stars earned</p>
+  </div>
+</section>
+
+<!-- ============ LEARN ============ -->
+<section class="page" id="page-learn">
+  <div class="card">
+    <h2>📚 Lessons</h2>
+    <div class="lesson-nav" id="lesson-nav"></div>
+    <div id="lesson-body"></div>
+  </div>
+</section>
+
+<!-- ============ GAME ============ -->
+<section class="page" id="page-game">
+  <div class="card">
+    <h2>🎮 The Trading Game</h2>
+    <p>You have <b>$100 of pretend money</b>. The chart shows a stock's price with the <span style="color:#ffb703;font-weight:bold">8-day EMA (yellow)</span> and <span style="color:#90e0ef;font-weight:bold">21-day EMA (blue)</span>. Press <b>Next Day</b> to move time forward. Buy low, protect yourself with the auto stop-loss, and try to grow your camp fund!</p>
+    <div class="callout tip">🎯 Strategy hint from your bot: look for the price to dip <b>below both EMA lines</b> and then climb back above the yellow (8 EMA) line — that's the "reversal" signal!</div>
+    <canvas id="chart" width="900" height="380"></canvas>
+    <div class="hud">
+      <div class="stat"><div class="v" id="g-cash">$100.00</div><div class="l">💰 Cash</div></div>
+      <div class="stat"><div class="v" id="g-shares">0</div><div class="l">📦 Shares</div></div>
+      <div class="stat"><div class="v" id="g-price">—</div><div class="l">💲 Price</div></div>
+      <div class="stat"><div class="v" id="g-equity">$100.00</div><div class="l">🏦 Total Value</div></div>
+      <div class="stat"><div class="v" id="g-day">0</div><div class="l">📅 Day</div></div>
+    </div>
+    <div class="controls">
+      <button class="big-btn blue" id="btn-next">⏭️ Next Day</button>
+      <button class="big-btn" id="btn-buy">🛒 Buy</button>
+      <button class="big-btn red" id="btn-sell" disabled>💸 Sell</button>
+      <button class="big-btn" style="background:var(--lav); box-shadow:0 5px 0 #6f5fa3" id="btn-reset">🔄 New Game</button>
+    </div>
+    <div class="result-box" id="game-msg">Press "Next Day" a few times to watch the price move. When you buy, a safety stop-loss is set 3% below your price automatically — just like the real bot!</div>
+  </div>
+</section>
+
+<!-- ============ CALCULATOR ============ -->
+<section class="page" id="page-calc">
+  <div class="card">
+    <h2>🧮 Risk Calculator</h2>
+    <p>Real traders never ask "how much can I make?" first. They ask <b>"how much could I lose?"</b> This calculator uses your bot's exact formula: risk only <b>1% of your money</b> on any single trade.</p>
+    <div class="calc-row"><label>💰 How much money do you have?</label><input type="number" id="c-equity" value="100" min="1"></div>
+    <div class="calc-row"><label>💲 Price of one share?</label><input type="number" id="c-price" value="50" min="0.01" step="0.01"></div>
+    <div class="calc-row"><label>🛑 Stop-loss (% below buy price)?</label><input type="number" id="c-stop" value="3" min="0.5" step="0.5"></div>
+    <button class="big-btn" onclick="calcRisk()">Calculate! ✨</button>
+    <div class="result-box" id="calc-out">Fill in the boxes and press Calculate!</div>
+  </div>
+  <div class="card">
+    <h3>Why only 1%? 🤔</h3>
+    <p>If you risk 1% per trade, you could be wrong <b>20 times in a row</b> and still have over 80% of your money left. If you risk 25% per trade, just 4 bad trades and you're almost broke. Small risks = you get to keep playing. <b>Survival is the superpower.</b></p>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="page" id="page-quiz">
+  <div class="card">
+    <h2>❓ Trader Quiz</h2>
+    <p id="quiz-status"></p>
+    <div id="quiz-body"></div>
+  </div>
+</section>
+
+<!-- ============ RULES ============ -->
+<section class="page" id="page-rules">
+  <div class="card">
+    <h2>🛡️ The Golden Rules</h2>
+    <p>These come straight from your bot's research. Print them. Tape them to the wall. 😄</p>
+    <div class="rule-card"><span class="emoji">1️⃣</span><div><b>Never risk more than 1% on one trade.</b> Small risks mean you survive to trade another day.</div></div>
+    <div class="rule-card"><span class="emoji">🛑</span><div><b>Always set your stop-loss BEFORE you buy.</b> Decide where you're wrong ahead of time (the bot uses −3%).</div></div>
+    <div class="rule-card"><span class="emoji">🎲</span><div><b>A good-looking backtest is NOT proof.</b> Your bot's edge test showed +20% returns can still be no better than random (z-score 0.29). Demand z &gt; 2 with 100+ trades.</div></div>
+    <div class="rule-card"><span class="emoji">🏆</span><div><b>Don't chase win rate.</b> Your bot wins only 27% of the time but still makes money — because wins ($4.12 avg) are 4× bigger than losses ($1.07 avg). Expectancy beats win rate.</div></div>
+    <div class="rule-card"><span class="emoji">🔧</span><div><b>Don't keep tuning until the past looks perfect.</b> That's overfitting — the #1 way traders lose real money.</div></div>
+    <div class="rule-card"><span class="emoji">🏛️</span><div><b>"Secret" signals usually aren't.</b> Politician trades looked exciting, but the edge disappears before the 45-day disclosure deadline. Test everything.</div></div>
+    <div class="rule-card"><span class="emoji">📄</span><div><b>Paper trade for weeks before using real money.</b> If practice doesn't work, real money won't either.</div></div>
+    <div class="rule-card"><span class="emoji">🐢</span><div><b>Slow is smooth, smooth is fast.</b> Most traders lose by rushing. Being patient IS the edge.</div></div>
+  </div>
+</section>
+
+</main>
+<footer>Trade Camp 🏕️ — built from the dpt_bot research. Practice money only. Not financial advice.</footer>
+
+<script>
+"use strict";
+/* ---------- state & persistence ---------- */
+const S = JSON.parse(localStorage.getItem("tradecamp") || "{}");
+S.lessonsDone = S.lessonsDone || [];
+S.quizBest = S.quizBest || 0;
+S.gameWon = S.gameWon || false;
+function save(){ localStorage.setItem("tradecamp", JSON.stringify(S)); refreshStars(); }
+function stars(){ return S.lessonsDone.length + (S.quizBest >= 5 ? 1 : 0) + (S.gameWon ? 1 : 0); }
+function refreshStars(){
+  document.getElementById("stars").textContent = stars();
+  const pct = Math.round(stars()/8*100);
+  document.getElementById("progress-fill").style.width = pct+"%";
+  document.getElementById("progress-text").textContent = stars()+" of 8 stars earned";
+}
+
+/* ---------- navigation ---------- */
+function go(name){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("show"));
+  document.getElementById("page-"+name).classList.add("show");
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active", b.dataset.page===name));
+  window.scrollTo({top:0});
+}
+document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>go(b.dataset.page)));
+
+/* ---------- lessons ---------- */
+const LESSONS = [
+ {t:"What is a stock? 📈", h:`
+  <h3>Lesson 1: What is a stock? 📈</h3>
+  <p>A <b>stock</b> is a tiny piece of a company. If you own a share of a lemonade company and the company does great, your piece becomes worth more. If it does badly, your piece is worth less.</p>
+  <p>The <b>price chart</b> shows what people paid over time. It wiggles up and down every day because millions of people keep changing their minds about what a company is worth.</p>
+  <div class="callout tip">💡 Traders don't try to guess every wiggle. They look for special <b>patterns</b> — and follow strict safety rules.</div>`},
+ {t:"The 8/21 EMA lines ➰", h:`
+  <h3>Lesson 2: The magic moving lines (8/21 EMA) ➰</h3>
+  <p>An <b>EMA</b> (Exponential Moving Average) is a smooth line that follows the price. Think of it like the price's "shadow" that moves slower.</p>
+  <ul>
+   <li>The <b>8-day EMA</b> is a fast shadow — it hugs the price closely.</li>
+   <li>The <b>21-day EMA</b> is a slow shadow — it takes its time.</li>
+  </ul>
+  <p>Your bot's trick: when a stock has fallen a LOT (20% below its yearly high) and then the price climbs back <b>above the fast (8) line</b>, that can mean the fall is over and buyers are coming back. That's the <b>reversal signal</b>.</p>
+  <div class="callout warn">⚠️ No signal works every time. Your bot only wins 27% of its trades — and still comes out ahead. The next lessons explain that magic.</div>`},
+ {t:"Stop-loss = seatbelt 🛑", h:`
+  <h3>Lesson 3: The stop-loss is your seatbelt 🛑</h3>
+  <p>A <b>stop-loss</b> is a promise you make BEFORE buying: "If the price falls 3% below what I paid, I sell automatically. No crying, no hoping."</p>
+  <p>Your bot's full exit plan (the "exit ladder"):</p>
+  <ol>
+   <li>🛑 Hard stop at <b>−3%</b> — small loss, no big deal</li>
+   <li>😌 If the trade gains +12%, the stop moves up to break-even — now you <b>can't lose</b></li>
+   <li>🪜 After that, a trailing stop follows 5% below the highest price</li>
+   <li>🎯 Take the win at +20%, or exit after ~60 days if nothing happens</li>
+  </ol>
+  <div class="callout tip">💡 Losers decide when to sell AFTER things go wrong. Winners decide BEFORE they buy.</div>`},
+ {t:"The 1% rule 🐢", h:`
+  <h3>Lesson 4: The 1% rule — survival is the superpower 🐢</h3>
+  <p>Rule: never risk more than <b>1% of all your money</b> on a single trade.</p>
+  <p>The formula (your bot uses this exact one):</p>
+  <p style="background:#f4f0e8;padding:10px;border-radius:10px"><b>shares = (your money × 1%) ÷ (buy price − stop price)</b></p>
+  <p>Example: You have $100. You buy at $50 with a stop at $48.50 (3% below). Risk per share = $1.50. You may risk $1 total → you buy <b>0.66 shares</b> (fractional shares are fine!).</p>
+  <div class="callout warn">⚠️ Risking big feels exciting and works... until one bad day erases everything. The 1% rule means even 20 losses in a row can't knock you out.</div>`},
+ {t:"The honest edge test 🎲", h:`
+  <h3>Lesson 5: The edge test — is your strategy REALLY good? 🎲</h3>
+  <p>Here's the trap: you test a strategy on old data and it made +20%! Time to get rich? <b>NO.</b> First ask: <i>would random guessing have done just as well?</i></p>
+  <p>The <b>edge test</b> compares your strategy's trades against thousands of random trades on the same stocks. It gives a <b>z-score</b>:</p>
+  <ul>
+   <li>z-score <b>above 2</b> (with 100+ trades) → maybe a real edge 🎉</li>
+   <li>z-score <b>below 2</b> → your strategy is probably just lucky 😬</li>
+  </ul>
+  <p>True story: your own bot made +20.83% in its backtest… but the edge test said <b>z = 0.29 — no better than random!</b> That honest answer saved you real money.</p>
+  <div class="callout tip">💡 "No edge" is not failure — it's a money-saving answer. Most strategies fail this test. The pros know that; gamblers don't.</div>`},
+ {t:"Sneaky traps 🕳️", h:`
+  <h3>Lesson 6: Sneaky traps that eat traders 🕳️</h3>
+  <p><b>Trap 1: Overfitting 🔧</b> — tweaking your strategy until the PAST looks perfect. The past doesn't repeat exactly, so a "perfect" backtest usually fails with real money. Your bot's walk-forward test checks this: tune on old data, test on newer unseen data. If tuned settings don't beat plain defaults, the tuning was noise.</p>
+  <p><b>Trap 2: Chasing win rate 🏆</b> — a 90% win rate sounds amazing, but if the 10% losses are huge, you lose money overall. What matters is <b>expectancy</b>: (average win × win chance) − (average loss × loss chance).</p>
+  <p><b>Trap 3: "Secret" signals 🏛️</b> — your bot tested whether copying politicians' stock buys works. Result: any edge <b>disappears before the law says they must tell anyone</b> (45 days later). By the time you know, it's too late. Always test the "secret sauce."</p>
+  <div class="callout tip">🎓 You finished all six lessons! Now go play the Trading Game and take the Quiz!</div>`}
+];
+const nav = document.getElementById("lesson-nav");
+let curLesson = 0;
+function renderLessons(){
+  nav.innerHTML = "";
+  LESSONS.forEach((L,i)=>{
+    const b = document.createElement("button");
+    b.textContent = (S.lessonsDone.includes(i) ? "✅ " : "") + (i+1);
+    b.title = L.t;
+    b.className = (i===curLesson?"current ":"") + (S.lessonsDone.includes(i)?"done":"");
+    b.onclick = ()=>{ curLesson=i; renderLessons(); };
+    nav.appendChild(b);
+  });
+  const body = document.getElementById("lesson-body");
+  const doneBtn = S.lessonsDone.includes(curLesson)
+    ? `<p class="badge">⭐ Lesson complete!</p>`
+    : `<button class="big-btn" onclick="finishLesson(${curLesson})">I read it — give me my star! ⭐</button>`;
+  const next = curLesson < LESSONS.length-1
+    ? `<button class="big-btn blue" style="margin-left:10px" onclick="curLesson=${curLesson+1};renderLessons()">Next lesson ➡️</button>` : "";
+  body.innerHTML = LESSONS[curLesson].h + "<div style='margin-top:14px'>" + doneBtn + next + "</div>";
+}
+function finishLesson(i){
+  if(!S.lessonsDone.includes(i)) S.lessonsDone.push(i);
+  save(); renderLessons();
+}
+
+/* ---------- trading game ---------- */
+const cv = document.getElementById("chart"), ctx = cv.getContext("2d");
+let G;
+function newGame(){
+  G = { prices:[], day:0, cash:100, shares:0, buyPrice:0, stop:0, peak:0, over:false };
+  let p = 40 + Math.random()*30;
+  let drift = -0.15, vol = 1.2;
+  // pre-generate 240 days with regime shifts (fall then recover chances)
+  for(let i=0;i<240;i++){
+    if(i===80) drift = 0.05 + Math.random()*0.1;      // recovery begins
+    if(i===160) drift = (Math.random()<0.5?-0.1:0.12); // surprise regime
+    p = Math.max(5, p + drift + (Math.random()-0.5)*2*vol);
+    G.prices.push(p);
+  }
+  G.day = 30; // show first 30 days as history
+  msg("New game! You have $100. Watch the chart, wait for a good moment, and remember your lessons. 🎓");
+  updateGame();
+}
+function ema(arr, n){
+  const k = 2/(n+1), out=[]; let e = arr[0];
+  arr.forEach((v,i)=>{ e = i? v*k + e*(1-k) : v; out.push(e); });
+  return out;
+}
+function price(){ return G.prices[G.day]; }
+function equity(){ return G.cash + G.shares*price(); }
+function msg(t){ document.getElementById("game-msg").innerHTML = t; }
+function updateGame(){
+  const p = price();
+  document.getElementById("g-cash").textContent = "$"+G.cash.toFixed(2);
+  document.getElementById("g-shares").textContent = G.shares.toFixed(2);
+  document.getElementById("g-price").textContent = "$"+p.toFixed(2);
+  document.getElementById("g-equity").textContent = "$"+equity().toFixed(2);
+  document.getElementById("g-day").textContent = G.day;
+  document.getElementById("btn-buy").disabled = G.shares>0 || G.over;
+  document.getElementById("btn-sell").disabled = G.shares===0 || G.over;
+  document.getElementById("btn-next").disabled = G.over;
+  drawChart();
+}
+function drawChart(){
+  const W=cv.width, H=cv.height, view=G.prices.slice(Math.max(0,G.day-90), G.day+1);
+  const e8 = ema(G.prices.slice(0,G.day+1), 8).slice(-view.length);
+  const e21 = ema(G.prices.slice(0,G.day+1), 21).slice(-view.length);
+  const lo = Math.min(...view)*0.96, hi = Math.max(...view)*1.04;
+  const X = i => 40 + (W-60)*(i/(view.length-1||1));
+  const Y = v => H-30 - (H-60)*((v-lo)/(hi-lo));
+  ctx.clearRect(0,0,W,H);
+  // gridlines
+  ctx.strokeStyle="rgba(255,255,255,.08)"; ctx.lineWidth=1;
+  for(let g=0; g<5; g++){ const y=30+(H-60)*g/4; ctx.beginPath(); ctx.moveTo(40,y); ctx.lineTo(W-20,y); ctx.stroke();
+    ctx.fillStyle="rgba(255,255,255,.5)"; ctx.font="12px sans-serif";
+    ctx.fillText("$"+(hi-(hi-lo)*g/4).toFixed(0), 4, y+4); }
+  const line=(data,color,w)=>{ ctx.strokeStyle=color; ctx.lineWidth=w; ctx.beginPath();
+    data.forEach((v,i)=> i? ctx.lineTo(X(i),Y(v)) : ctx.moveTo(X(i),Y(v))); ctx.stroke(); };
+  line(e21,"#90e0ef",2.5); line(e8,"#ffb703",2.5); line(view,"#ffffff",2);
+  // position markers
+  if(G.shares>0){
+    ctx.strokeStyle="#2a9d8f"; ctx.setLineDash([6,4]); ctx.beginPath();
+    ctx.moveTo(40,Y(G.buyPrice)); ctx.lineTo(W-20,Y(G.buyPrice)); ctx.stroke();
+    ctx.strokeStyle="#e76f51"; ctx.beginPath();
+    ctx.moveTo(40,Y(G.stop)); ctx.lineTo(W-20,Y(G.stop)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle="#2a9d8f"; ctx.fillText("bought $"+G.buyPrice.toFixed(2), W-140, Y(G.buyPrice)-5);
+    ctx.fillStyle="#e76f51"; ctx.fillText("stop $"+G.stop.toFixed(2), W-140, Y(G.stop)+14);
+  }
+  // last price dot
+  ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(X(view.length-1),Y(view[view.length-1]),5,0,7); ctx.fill();
+}
+document.getElementById("btn-next").onclick = ()=>{
+  if(G.day >= G.prices.length-1){ endGame(); return; }
+  G.day++;
+  const p = price();
+  if(G.shares>0){
+    G.peak = Math.max(G.peak, p);
+    // ratchet: break-even at +12%, then trail 5% under peak
+    if(G.peak >= G.buyPrice*1.12) G.stop = Math.max(G.buyPrice, G.peak*0.95);
+    if(p <= G.stop){
+      const proceeds = G.shares*G.stop;
+      const pl = proceeds - G.shares*G.buyPrice;
+      G.cash += proceeds; G.shares=0;
+      msg(pl>=0
+        ? `🪜 Trailing stop hit at $${G.stop.toFixed(2)} — you locked in a WIN of $${pl.toFixed(2)}! That's the exit ladder doing its job.`
+        : `🛑 Stop-loss hit at $${G.stop.toFixed(2)}. You lost $${(-pl).toFixed(2)} — a small, planned loss. That's the seatbelt working, not failure!`);
+    } else if(p >= G.buyPrice*1.20){
+      const proceeds = G.shares*p, pl = proceeds - G.shares*G.buyPrice;
+      G.cash += proceeds; G.shares=0;
+      msg(`🎯 +20% target hit! Sold at $${p.toFixed(2)} for a $${pl.toFixed(2)} win! Just like the bot's final target.`);
+    }
+  }
+  if(G.day >= G.prices.length-1) endGame(); else updateGame();
+};
+document.getElementById("btn-buy").onclick = ()=>{
+  const p = price();
+  G.stop = p*0.97; G.buyPrice = p; G.peak = p;
+  // 1% risk sizing, capped at 50% of equity — the bot's exact rule
+  const riskDollars = equity()*0.01, perShare = p - G.stop;
+  let sh = riskDollars/perShare;
+  sh = Math.min(sh, (equity()*0.5)/p, G.cash/p);
+  G.shares = Math.max(0.01, +sh.toFixed(2));
+  G.cash -= G.shares*p;
+  msg(`🛒 Bought ${G.shares} shares at $${p.toFixed(2)}. Stop-loss auto-set at $${G.stop.toFixed(2)} (−3%). Risking about $${(G.shares*perShare).toFixed(2)} — right around 1% of your money. 👏`);
+  updateGame();
+};
+document.getElementById("btn-sell").onclick = ()=>{
+  const p = price(), pl = G.shares*(p-G.buyPrice);
+  G.cash += G.shares*p; G.shares = 0;
+  msg(pl>=0 ? `💸 Sold at $${p.toFixed(2)} for a $${pl.toFixed(2)} profit! Nice trade!`
+            : `💸 Sold at $${p.toFixed(2)} for a $${(-pl).toFixed(2)} loss. Cutting losers early is a PRO move.`);
+  updateGame();
+};
+document.getElementById("btn-reset").onclick = newGame;
+function endGame(){
+  G.over = true;
+  if(G.shares>0){ G.cash += G.shares*price(); G.shares=0; }
+  const final = G.cash, won = final > 100;
+  if(won && !S.gameWon){ S.gameWon = true; save(); }
+  msg(`🏁 <b>Game over!</b> Final fund: <b>$${final.toFixed(2)}</b> (${won?"+":""}${(final-100).toFixed(2)}). `
+    + (won ? "You beat the market camp challenge! ⭐ Star earned!" :
+       "Below $100 this time — totally normal! Even your real bot loses 72% of its trades. Press New Game and try again. 🐢")
+    );
+  updateGame();
+}
+
+/* ---------- calculator ---------- */
+function calcRisk(){
+  const eq = +document.getElementById("c-equity").value || 0;
+  const pr = +document.getElementById("c-price").value || 0;
+  const st = +document.getElementById("c-stop").value || 0;
+  if(eq<=0||pr<=0||st<=0){ document.getElementById("calc-out").textContent="Please fill every box with a number bigger than 0!"; return; }
+  const stopPrice = pr*(1-st/100), riskPerShare = pr-stopPrice, riskBudget = eq*0.01;
+  let shares = riskBudget/riskPerShare;
+  const maxByCap = (eq*0.5)/pr; let capped = false;
+  if(shares > maxByCap){ shares = maxByCap; capped = true; }
+  const cost = shares*pr;
+  document.getElementById("calc-out").innerHTML =
+   `🧮 <b>Your safe trade size:</b><br>
+    ✅ Buy <b>${shares.toFixed(2)} shares</b> (about $${cost.toFixed(2)})<br>
+    🛑 Stop-loss goes at <b>$${stopPrice.toFixed(2)}</b><br>
+    💸 If the stop hits, you lose only <b>$${(shares*riskPerShare).toFixed(2)}</b> — ${capped?"(size was capped at 50% of your money, another bot safety rule!)":"just 1% of your money."}<br>
+    🐢 You could be wrong ${capped?"many":"100"} times before running out. That's the survival superpower.`;
+}
+
+/* ---------- quiz ---------- */
+const QUIZ = [
+ {q:"How much of your money should you risk on ONE trade?", a:["All of it — go big!","About 25%","Just 1%","Whatever feels lucky"], c:2,
+  why:"1% per trade means even a long losing streak can't knock you out."},
+ {q:"When do you decide your stop-loss (exit) price?", a:["BEFORE you buy","After it starts falling","When you feel scared","Never — real traders hold forever"], c:0,
+  why:"Winners plan the exit before they enter. The bot sets it at −3% automatically."},
+ {q:"Your backtest made +20%! What should you do FIRST?", a:["Bet real money fast","Run the edge test vs. random","Tell everyone","Double the bet size"], c:1,
+  why:"Your own bot made +20.83% but scored z=0.29 — no better than random. The edge test is the honesty check."},
+ {q:"A strategy wins only 27% of the time. Can it still make money?", a:["No way","Only by cheating","Yes — if wins are much bigger than losses","Only on Tuesdays"], c:2,
+  why:"Your bot's avg win is $4.12 vs avg loss $1.07 — expectancy beats win rate."},
+ {q:"What is 'overfitting'?", a:["Exercising too much","Tuning a strategy until the PAST looks perfect","Buying too many shares","A kind of chart"], c:1,
+  why:"A perfectly-tuned past usually fails in the future. Walk-forward testing exposes it."},
+ {q:"Copying politicians' stock trades — what did the research find?", a:["Guaranteed riches","The edge is gone before they must disclose (45 days)","Illegal to even look","Works only for senators"], c:1,
+  why:"The signal decays to zero before the legal disclosure deadline. Test every 'secret sauce.'"},
+ {q:"Before trading real money you should…", a:["Watch one video","Paper trade for weeks","Ask a friend","Flip a coin"], c:1,
+  why:"If pretend-money trading doesn't work, real money won't either."}
+];
+let qi = 0, qScore = 0;
+function renderQuiz(){
+  const body = document.getElementById("quiz-body");
+  document.getElementById("quiz-status").innerHTML =
+    `Best score: <b>${S.quizBest}/${QUIZ.length}</b> ${S.quizBest>=5?"⭐":""} — get 5+ to earn a star!`;
+  if(qi >= QUIZ.length){
+    const passed = qScore >= 5;
+    if(qScore > S.quizBest){ S.quizBest = qScore; save(); }
+    body.innerHTML = `<h3>${passed?"🎉 You passed!":"🐢 Keep practicing!"}</h3>
+      <p>You scored <b>${qScore}/${QUIZ.length}</b>. ${passed?"Star earned! You know more than most adults with brokerage accounts.":"Re-read the lessons and try again — you've got this!"}</p>
+      <button class="big-btn" onclick="qi=0;qScore=0;renderQuiz()">Try again 🔄</button>`;
+    renderQuiz.statusOnly = true;
+    document.getElementById("quiz-status").innerHTML =
+      `Best score: <b>${S.quizBest}/${QUIZ.length}</b> ${S.quizBest>=5?"⭐":""}`;
+    return;
+  }
+  const Q = QUIZ[qi];
+  body.innerHTML = `<h3>Question ${qi+1} of ${QUIZ.length}</h3><p><b>${Q.q}</b></p>` +
+    Q.a.map((opt,i)=>`<button class="quiz-opt" data-i="${i}">${opt}</button>`).join("") +
+    `<div id="quiz-why"></div>`;
+  body.querySelectorAll(".quiz-opt").forEach(btn=>{
+    btn.onclick = ()=>{
+      const i = +btn.dataset.i, ok = i===Q.c;
+      body.querySelectorAll(".quiz-opt").forEach((b,j)=>{
+        b.disabled = true;
+        if(j===Q.c) b.classList.add("correct");
+        else if(j===i && !ok) b.classList.add("wrong");
+      });
+      if(ok) qScore++;
+      document.getElementById("quiz-why").innerHTML =
+        `<div class="callout ${ok?'tip':'warn'}">${ok?"✅ Correct!":"❌ Not quite."} ${Q.why}</div>
+         <button class="big-btn blue" onclick="qi++;renderQuiz()">${qi+1<QUIZ.length?"Next question ➡️":"See my score 🏁"}</button>`;
+    };
+  });
+}
+
+/* ---------- boot ---------- */
+renderLessons(); renderQuiz(); newGame(); refreshStars();
+</script>
+</body>
+</html>
