@@ -29,7 +29,7 @@ learn before risking real money.
 
 No install, no build, no server.
 
-1. Download `Trade Camp.html`.
+1. Download `Tricks of the Trade.html`.
 2. Double-click it (or open it in any web browser).
 
 That's it. It works fully offline.
