@@ -740,6 +740,10 @@ const QUIZ = [
   why:"The signal decays to zero before the legal disclosure deadline. Test every 'secret sauce.'"},
  {q:"Before trading real money you should…", a:["Watch one video","Paper trade for weeks","Ask a friend","Flip a coin"], c:1,
   why:"If pretend-money trading doesn't work, real money won't either."},
+ {q:"What are a trader's three biggest mental enemies?", a:["Fear, greed, and chasing (FOMO)","Happy, calm, and lucky","Smart, fast, and rich","None — trading is pure math"], c:0,
+  why:"Fear sells too early, greed bets too big, chasing buys the top. The 1% rule and stop-loss-first exist to protect you from these emotions."},
+ {q:"When you feel FOMO (fear of missing out) and want to buy fast, you should…", a:["Buy immediately before it rises more","Slow down and stick to your plan","Bet double to catch up","Ask a stranger"], c:1,
+  why:"Panic and FOMO are signals to SLOW DOWN. Calm, repeatable decisions compound — that's the psychological edge."},
  {q:"Earn Your Leisure's big idea is that building wealth is mostly about…", a:["Picking one lucky stock","Learning how money moves, then OWNING something","Saving every dollar forever","Avoiding all risk"], c:1,
   why:"EYL teaches: a job trades time for money (capped), but ownership — a business, a stock — is what compounds."},
  {q:"A share of stock is really…", a:["A bet with the casino","A tiny piece of OWNERSHIP in a company","A free coupon","A tax bill"], c:1,
@@ -851,7 +855,9 @@ const FLASHCARDS = {
     {t:"Paper Trading", d:"Practicing with fake money before risking real money. The bot's docs say do this for WEEKS first.",
      img:`<svg viewBox="0 0 200 90"><rect x="30" y="20" width="60" height="40" rx="4" fill="none" stroke="#ffb703" stroke-width="2.5"/><line x1="40" y1="32" x2="80" y2="32" stroke="#ffb703" stroke-width="2"/><line x1="40" y1="42" x2="80" y2="42" stroke="#ffb703" stroke-width="2"/><rect x="105" y="20" width="60" height="40" rx="4" fill="none" stroke="#2a9d8f" stroke-width="2.5"/><text x="115" y="44" fill="#2a9d8f" font-size="11" font-family="sans-serif">REAL</text></svg>`},
     {t:"Political / Congressional Signal", d:"Using senators' disclosed stock buys as a hint. The bot tested it: any edge vanishes before the 45-day disclosure rule. Test every 'secret'.",
-     img:`<svg viewBox="0 0 200 90"><polyline points="15,30 60,28 100,26 130,40 160,62 190,66" fill="none" stroke="#ffb703" stroke-width="3"/><line x1="60" y1="28" x2="60" y2="80" stroke="#e76f51" stroke-width="2" stroke-dasharray="4 3"/><text x="68" y="78" fill="#e76f51" font-size="10" font-family="sans-serif">+45d lag</text></svg>`}
+     img:`<svg viewBox="0 0 200 90"><polyline points="15,30 60,28 100,26 130,40 160,62 190,66" fill="none" stroke="#ffb703" stroke-width="3"/><line x1="60" y1="28" x2="60" y2="80" stroke="#e76f51" stroke-width="2" stroke-dasharray="4 3"/><text x="68" y="78" fill="#e76f51" font-size="10" font-family="sans-serif">+45d lag</text></svg>`},
+    {t:"🧘 Trading Psychology", d:"The mental game. Your 3 enemies: FEAR (sells too early), GREED (bets too big), CHASING/FOMO (buys the top). The 1% rule, stop-loss-first, and patience exist to protect you from your own emotions. Panic = slow down.",
+     img:`<svg viewBox="0 0 200 90"><circle cx="100" cy="45" r="30" fill="none" stroke="#7b6cb0" stroke-width="2.5"/><path d="M100 25 a30 30 0 0 1 21 51" fill="none" stroke="#e63946" stroke-width="3"/><text x="84" y="50" fill="#7b6cb0" font-size="11" font-family="sans-serif">mind</text></svg>`}
   ]
 };
 let fcCat = "indicators", fcIdx = 0;
