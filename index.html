@@ -245,7 +245,15 @@
     </div>
     <div class="result-box" id="signal-summary" style="display:none; background:rgba(106,76,147,.18); border:1px solid #6a4c93"></div>
     <div class="result-box" id="game-msg">Press "Next Day" a few times to watch the price move. When you buy, a safety stop-loss is set 3% below your price automatically — just like the real bot!</div>
+    <div id="psycheck" style="display:none; margin-top:12px; padding:12px 14px; border:2px dashed var(--lav); border-radius:14px; background:rgba(123,108,176,.08)">
+      <b>🧘 Psychology check:</b> Before you buy — are you calm and following your plan, or feeling FOMO?
+      <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap">
+        <button class="big-btn" style="background:#2a9d8f;box-shadow:0 5px 0 #1f7a70" onclick="doBuy(false)">😌 Calm &amp; planned</button>
+        <button class="big-btn red" onclick="doBuy(true)">😰 I'm FOMO-ing</button>
+      </div>
+    </div>
   </div>
+
 </section>
 
 <!-- ============ CALCULATOR ============ -->
@@ -523,6 +531,7 @@ function ema(arr, n){
 }
 function price(){ return G.prices[G.day]; }
 function equity(){ return G.cash + G.shares*price(); }
+function msg(html){ document.getElementById("game-msg").innerHTML = html; }
 
 // Scan the FULL price history for every point the bot's reversal entry WOULD have fired,
 // plus the projected exit ladder (stop -3%, break-even +12%, target +20%).
@@ -572,6 +581,7 @@ function backtestHypotheticals(){
 }
 function updateGame(){
   const p = price();
+  document.getElementById("psycheck").style.display = "none";
   document.getElementById("g-cash").textContent = "$"+G.cash.toFixed(2);
   document.getElementById("g-shares").textContent = G.shares.toFixed(2);
   document.getElementById("g-price").textContent = "$"+p.toFixed(2);
@@ -652,6 +662,13 @@ document.getElementById("btn-next").onclick = ()=>{
   if(G.day >= G.prices.length-1) endGame(); else updateGame();
 };
 document.getElementById("btn-buy").onclick = ()=>{
+  if(G.shares>0 || G.over) return;
+  document.getElementById("psycheck").style.display = "block";
+  document.getElementById("btn-buy").disabled = true;
+};
+function doBuy(fomo){
+  document.getElementById("psycheck").style.display = "none";
+  document.getElementById("btn-buy").disabled = false;
   const p = price();
   G.stop = p*0.97; G.buyPrice = p; G.peak = p;
   // 1% risk sizing, capped at 50% of equity — the bot's exact rule
@@ -660,9 +677,12 @@ document.getElementById("btn-buy").onclick = ()=>{
   sh = Math.min(sh, (equity()*0.5)/p, G.cash/p);
   G.shares = Math.max(0.01, +sh.toFixed(2));
   G.cash -= G.shares*p;
-  msg(`🛒 Bought ${G.shares} shares at $${p.toFixed(2)}. Stop-loss auto-set at $${G.stop.toFixed(2)} (−3%). Risking about $${(G.shares*perShare).toFixed(2)} — right around 1% of your money. 👏`);
+  const psyNote = fomo
+    ? " ⚠️ You said you were FOMO-ing — that's the exact feeling the 1% rule protects you from. Stick to the plan next time!"
+    : " 🧘 Calm & planned — that's the psychological edge!";
+  msg(`🛒 Bought ${G.shares} shares at $${p.toFixed(2)}. Stop-loss auto-set at $${G.stop.toFixed(2)} (−3%). Risking about $${(G.shares*perShare).toFixed(2)} — right around 1% of your money.${psyNote}`);
   updateGame();
-};
+}
 document.getElementById("btn-sell").onclick = ()=>{
   const p = price(), pl = G.shares*(p-G.buyPrice);
   G.cash += G.shares*p; G.shares = 0;
