@@ -6,113 +6,127 @@
 <title>Tricks of the Trade 🏕️ — Learn to Trade the Smart Way</title>
 <style>
   :root{
-    --bg:#fef9ef; --card:#ffffff; --ink:#2d3142; --muted:#6b7280;
+    --bg:#fff7ec; --card:#ffffff; --ink:#232838; --muted:#707a8a;
     --sun:#ffb703; --sky:#219ebc; --deep:#023047; --grass:#2a9d8f;
-    --berry:#e76f51; --lav:#8e7dbe;
-    --radius:20px; --shadow:0 6px 0 rgba(2,48,71,.12);
+    --berry:#e63946; --lav:#7b6cb0;
+    --radius:22px; --shadow:0 8px 22px rgba(2,48,71,.10);
+    --ring:rgba(2,48,71,.14);
     font-size:16px;
   }
   *{box-sizing:border-box; margin:0; padding:0}
   body{
-    font-family:"Comic Sans MS","Chalkboard SE","Segoe UI",system-ui,sans-serif;
-    background:var(--bg); color:var(--ink); min-height:100vh; padding-bottom:60px;
+    font-family:"Nunito","Segoe UI",system-ui,-apple-system,sans-serif;
+    background:
+      radial-gradient(1200px 500px at 80% -10%, #e7f6fb 0%, transparent 60%),
+      radial-gradient(900px 500px at -10% 10%, #fff1d6 0%, transparent 55%),
+      var(--bg);
+    color:var(--ink); min-height:100vh; padding-bottom:60px;
+    -webkit-font-smoothing:antialiased;
   }
   header{
-    background:var(--deep); color:#fff; padding:18px 24px; display:flex;
-    align-items:center; gap:14px; flex-wrap:wrap;
+    background:linear-gradient(120deg,#023047,#0a4a66); color:#fff; padding:18px 26px;
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap; box-shadow:0 4px 18px rgba(2,48,71,.18);
   }
-  header h1{font-size:1.5rem}
+  header h1{font-size:1.55rem; letter-spacing:.2px}
+  header span.sub{opacity:.85; font-size:.95rem}
   header .coins{margin-left:auto; background:var(--sun); color:var(--deep);
-    padding:8px 16px; border-radius:999px; font-weight:bold; font-size:1rem}
-  nav{display:flex; gap:8px; padding:14px 20px; flex-wrap:wrap; background:#fff;
-    border-bottom:3px solid #eee; position:sticky; top:0; z-index:10}
+    padding:8px 18px; border-radius:999px; font-weight:800; font-size:1rem; box-shadow:0 3px 0 #c98f00}
+  nav{display:flex; gap:8px; padding:14px 22px; flex-wrap:wrap; background:rgba(255,255,255,.92);
+    backdrop-filter:blur(8px); border-bottom:1px solid #eee; position:sticky; top:0; z-index:10}
   nav button{
-    border:3px solid var(--deep); background:#fff; color:var(--deep);
-    padding:10px 18px; border-radius:999px; font-family:inherit; font-size:1rem;
-    font-weight:bold; cursor:pointer; min-height:44px; transition:transform .1s;
+    border:2px solid var(--deep); background:#fff; color:var(--deep);
+    padding:10px 18px; border-radius:999px; font-family:inherit; font-size:.98rem;
+    font-weight:800; cursor:pointer; min-height:44px; transition:transform .12s ease, box-shadow .12s ease;
   }
-  nav button:hover{transform:translateY(-2px)}
-  nav button.active{background:var(--sky); color:#fff; border-color:var(--sky)}
-  main{max-width:960px; margin:0 auto; padding:24px 20px}
+  nav button:hover{transform:translateY(-2px); box-shadow:0 4px 12px var(--ring)}
+  nav button.active{background:linear-gradient(120deg,var(--sky),#1a7f98); color:#fff; border-color:transparent; box-shadow:0 4px 12px rgba(33,158,188,.4)}
+  main{max-width:980px; margin:0 auto; padding:26px 20px}
   .page{display:none}
   .page.show{display:block; animation:pop .25s ease}
-  @keyframes pop{from{opacity:0; transform:translateY(8px)}to{opacity:1; transform:none}}
+  @keyframes pop{from{opacity:0; transform:translateY(10px)}to{opacity:1; transform:none}}
   .card{background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow);
-    padding:22px; margin-bottom:18px; border:3px solid #f0e9dc}
-  .card h2{margin-bottom:10px}
-  .card h3{margin:12px 0 6px}
-  .card p, .card li{line-height:1.55; margin-bottom:8px}
-  .card ul, .card ol{padding-left:24px; margin-bottom:8px}
+    padding:24px; margin-bottom:18px; border:1px solid #f0e9dc}
+  .card h2{margin-bottom:12px; font-size:1.5rem}
+  .card h3{margin:14px 0 8px; font-size:1.15rem}
+  .card p, .card li{line-height:1.6; margin-bottom:9px; font-size:1.02rem}
+  .card ul, .card ol{padding-left:24px; margin-bottom:9px}
   .big-btn{
-    display:inline-block; border:none; background:var(--grass); color:#fff;
-    font-family:inherit; font-size:1.1rem; font-weight:bold; padding:14px 26px;
-    border-radius:999px; cursor:pointer; box-shadow:0 5px 0 #1f7a70; min-height:48px;
+    display:inline-block; border:none; background:linear-gradient(120deg,var(--grass),#1f7a70); color:#fff;
+    font-family:inherit; font-size:1.08rem; font-weight:800; padding:14px 26px;
+    border-radius:999px; cursor:pointer; box-shadow:0 5px 0 #1f7a70; min-height:48px; transition:transform .1s ease, box-shadow .1s ease;
   }
+  .big-btn:hover{transform:translateY(-1px)}
   .big-btn:active{transform:translateY(3px); box-shadow:0 2px 0 #1f7a70}
-  .big-btn.red{background:var(--berry); box-shadow:0 5px 0 #b8503a}
+  .big-btn.red{background:linear-gradient(120deg,var(--berry),#c12d39); box-shadow:0 5px 0 #b8503a}
   .big-btn.red:active{box-shadow:0 2px 0 #b8503a}
-  .big-btn.blue{background:var(--sky); box-shadow:0 5px 0 #17708f}
+  .big-btn.blue{background:linear-gradient(120deg,var(--sky),#1a7f98); box-shadow:0 5px 0 #17708f}
   .big-btn.blue:active{box-shadow:0 2px 0 #17708f}
-  .big-btn:disabled{background:#cbd5d1; box-shadow:0 5px 0 #a8b5b0; cursor:not-allowed}
+  .big-btn:disabled{background:#cbd5d1; box-shadow:0 5px 0 #a8b5b0; cursor:not-allowed; transform:none}
   .badge{display:inline-block; background:var(--sun); color:var(--deep);
-    border-radius:999px; padding:4px 12px; font-weight:bold; font-size:.85rem; margin:2px}
+    border-radius:999px; padding:4px 12px; font-weight:800; font-size:.85rem; margin:2px}
   .lesson-nav{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px}
   .lesson-nav button{
-    border:3px solid var(--lav); background:#fff; color:var(--lav); font-family:inherit;
-    font-weight:bold; padding:10px 14px; border-radius:14px; cursor:pointer; min-height:44px;
+    border:2px solid var(--lav); background:#fff; color:var(--lav); font-family:inherit;
+    font-weight:800; padding:10px 14px; border-radius:14px; cursor:pointer; min-height:44px; transition:transform .12s ease;
   }
+  .lesson-nav button:hover{transform:translateY(-2px)}
   .lesson-nav button.done{background:var(--grass); border-color:var(--grass); color:#fff}
-  .lesson-nav button.current{background:var(--lav); color:#fff}
-  .callout{border-radius:14px; padding:14px 16px; margin:10px 0; font-weight:bold}
-  .callout.warn{background:#ffe8d6; border:3px dashed var(--berry)}
-  .callout.tip{background:#e0f2f1; border:3px dashed var(--grass)}
-  .quiz-opt{display:block; width:100%; text-align:left; margin:8px 0; padding:14px;
-    border-radius:14px; border:3px solid var(--sky); background:#fff; font-family:inherit;
-    font-size:1rem; cursor:pointer; min-height:48px}
-  .quiz-opt.correct{background:#c8f7dc; border-color:var(--grass)}
-  .quiz-opt.wrong{background:#ffd7cc; border-color:var(--berry)}
-  canvas{width:100%; border-radius:14px; background:#04263b; display:block}
+  .lesson-nav button.current{background:var(--lav); color:#fff; border-color:transparent}
+  .callout{border-radius:16px; padding:15px 18px; margin:12px 0; font-weight:600; line-height:1.55}
+  .callout.warn{background:#ffe9e0; border-left:6px solid var(--berry); color:#7a2a2a}
+  .callout.tip{background:#e3f6f3; border-left:6px solid var(--grass); color:#15514a}
+  .quiz-opt{display:block; width:100%; text-align:left; margin:8px 0; padding:14px 16px;
+    border-radius:16px; border:2px solid var(--sky); background:#fff; font-family:inherit;
+    font-size:1rem; font-weight:600; cursor:pointer; min-height:48px; transition:transform .1s ease, background .1s ease}
+  .quiz-opt:hover{background:#f2fbfd}
+  .quiz-opt.correct{background:#d3f8e2; border-color:var(--grass); color:#15514a}
+  .quiz-opt.wrong{background:#ffe0d8; border-color:var(--berry); color:#7a2a2a}
+  canvas{width:100%; border-radius:16px; background:linear-gradient(180deg,#04263b,#063a57); display:block; box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
   .hud{display:flex; gap:12px; flex-wrap:wrap; margin:14px 0}
-  .hud .stat{flex:1; min-width:130px; background:#fff; border:3px solid #f0e9dc;
-    border-radius:14px; padding:10px 14px; text-align:center}
-  .hud .stat .v{font-size:1.3rem; font-weight:bold}
-  .hud .stat .l{font-size:.8rem; color:var(--muted)}
-  .controls{display:flex; gap:12px; flex-wrap:wrap; margin-top:14px}
-  .calc-row{display:flex; gap:10px; align-items:center; margin:10px 0; flex-wrap:wrap}
-  .calc-row label{font-weight:bold; min-width:220px}
-  .calc-row input{font-family:inherit; font-size:1.1rem; padding:10px; width:130px;
-    border:3px solid var(--sky); border-radius:12px}
-  .result-box{background:var(--deep); color:#fff; border-radius:14px; padding:16px;
-    margin-top:12px; font-size:1.05rem; line-height:1.6}
-  .progressbar{height:18px; background:#eee; border-radius:999px; overflow:hidden; margin:8px 0}
-  .progressbar>div{height:100%; background:var(--grass); transition:width .4s}
-  .rule-card{display:flex; gap:12px; align-items:flex-start; background:#fff;
-    border:3px solid #f0e9dc; border-radius:14px; padding:14px; margin:10px 0}
-  .rule-card .emoji{font-size:1.8rem}
-  footer{ text-align:center; color:var(--muted); padding:20px; font-size:.85rem}
+  .hud .stat{flex:1; min-width:130px; background:#fff; border:1px solid #f0e9dc;
+    border-radius:16px; padding:12px 14px; text-align:center; box-shadow:var(--shadow)}
+  .hud .stat .v{font-size:1.35rem; font-weight:800; color:var(--deep)}
+  .hud .stat .l{font-size:.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:.5px}
+  .controls{display:flex; gap:12px; flex-wrap:wrap; margin-top:16px}
+  .calc-row{display:flex; gap:10px; align-items:center; margin:12px 0; flex-wrap:wrap}
+  .calc-row label{font-weight:800; min-width:220px}
+  .calc-row input{font-family:inherit; font-size:1.1rem; padding:11px; width:140px;
+    border:2px solid var(--sky); border-radius:12px; outline:none; transition:border-color .15s ease}
+  .calc-row input:focus{border-color:var(--deep)}
+  .result-box{background:linear-gradient(120deg,#023047,#0a4a66); color:#fff; border-radius:16px; padding:17px 18px;
+    margin-top:14px; font-size:1.05rem; line-height:1.65; box-shadow:var(--shadow)}
+  .progressbar{height:20px; background:#eee; border-radius:999px; overflow:hidden; margin:10px 0; box-shadow:inset 0 1px 3px rgba(0,0,0,.1)}
+  .progressbar>div{height:100%; background:linear-gradient(90deg,var(--grass),#1f7a70); transition:width .4s ease}
+  .rule-card{display:flex; gap:14px; align-items:flex-start; background:#fff;
+    border:1px solid #f0e9dc; border-radius:16px; padding:16px; margin:12px 0; box-shadow:var(--shadow)}
+  .rule-card .emoji{font-size:2rem; line-height:1}
+  footer{ text-align:center; color:var(--muted); padding:24px; font-size:.85rem}
   /* flashcards */
-  .cat-tabs{display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 16px}
-  .cat-tabs button{border:3px solid var(--sky); background:#fff; color:var(--sky); font-family:inherit;
-    font-weight:bold; padding:9px 14px; border-radius:999px; cursor:pointer; min-height:44px}
-  .cat-tabs button.active{background:var(--sky); color:#fff}
-  .flashcard{background:linear-gradient(160deg,#023047,#0a4a66); color:#fff; border-radius:18px;
-    padding:26px 22px; margin:12px 0; min-height:200px; display:flex; flex-direction:column;
-    justify-content:center; box-shadow:var(--shadow); cursor:pointer; user-select:none}
+  .cat-tabs{display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 18px}
+  .cat-tabs button{border:2px solid var(--sky); background:#fff; color:var(--sky); font-family:inherit;
+    font-weight:800; padding:9px 16px; border-radius:999px; cursor:pointer; min-height:44px; transition:transform .12s ease}
+  .cat-tabs button:hover{transform:translateY(-2px)}
+  .cat-tabs button.active{background:linear-gradient(120deg,var(--sky),#1a7f98); color:#fff; border-color:transparent}
+  .flashcard{background:linear-gradient(160deg,#023047,#0a4a66); color:#fff; border-radius:20px;
+    padding:28px 24px; margin:12px 0; min-height:210px; display:flex; flex-direction:column;
+    justify-content:center; box-shadow:var(--shadow); cursor:pointer; user-select:none; transition:transform .12s ease}
+  .flashcard:hover{transform:translateY(-2px)}
   .flashcard .tag{display:inline-block; align-self:flex-start; background:var(--sun); color:var(--deep);
-    border-radius:999px; padding:3px 12px; font-weight:bold; font-size:.8rem; margin-bottom:12px}
-  .flashcard .front{font-size:1.5rem; font-weight:bold}
-  .flashcard .pic{background:#fff; border-radius:12px; padding:6px; margin:6px 0 10px; text-align:center}
-  .flashcard .pic svg{width:100%; max-width:260px; height:auto}
-  .flashcard .back{font-size:1.15rem; line-height:1.55; margin-top:8px; display:none}
-  .flashcard.flipped .back{display:block}
+    border-radius:999px; padding:4px 14px; font-weight:800; font-size:.78rem; margin-bottom:14px; letter-spacing:.5px}
+  .flashcard .front{font-size:1.55rem; font-weight:800; line-height:1.3}
+  .flashcard .pic{background:#fff; border-radius:14px; padding:8px; margin:8px 0 12px; text-align:center; box-shadow:0 3px 10px rgba(0,0,0,.2)}
+  .flashcard .pic svg{width:100%; max-width:280px; height:auto}
+  .flashcard .back{font-size:1.12rem; line-height:1.6; margin-top:10px; display:none}
+  .flashcard.flipped .back{display:block; animation:fade .25s ease}
   .flashcard.flipped .hint{display:none}
-  .flashcard .hint{margin-top:12px; font-size:.85rem; opacity:.7}
+  .flashcard .hint{margin-top:14px; font-size:.85rem; opacity:.7}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
   .card-nav{display:flex; gap:12px; flex-wrap:wrap; align-items:center}
-  .card-count{margin-left:auto; color:var(--muted); font-weight:bold}
+  .card-count{margin-left:auto; color:var(--muted); font-weight:800}
   /* live market ribbon (CHRONICLE-style server feed) */
-  #ribbon{display:flex; gap:10px; flex-wrap:wrap; padding:10px 16px; background:#04263b; align-items:center}
-  #ribbon .tag{color:#90e0ef; font-weight:bold; font-size:.8rem; margin-right:6px}
-  .ribbon-item{background:#0a3a57; color:#fff; border-radius:999px; padding:6px 12px; font-size:.9rem; font-weight:bold}
+  #ribbon{display:flex; gap:10px; flex-wrap:wrap; padding:11px 18px; background:linear-gradient(120deg,#04263b,#063a57); align-items:center; box-shadow:0 3px 12px rgba(2,48,71,.2)}
+  #ribbon .tag{color:#90e0ef; font-weight:800; font-size:.8rem; margin-right:6px; letter-spacing:.5px}
+  .ribbon-item{background:#0a3a57; color:#fff; border-radius:999px; padding:6px 14px; font-size:.9rem; font-weight:700; box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
   .ribbon-item .up{color:#7CFC9A} .ribbon-item .down{color:#ff8d7a}
   #ribbon .status{margin-left:auto; font-size:.75rem; color:#9fb3c8}
   @keyframes pulse{0%{opacity:.4}50%{opacity:1}100%{opacity:.4}}
@@ -124,7 +138,7 @@
 <header>
   <span style="font-size:2rem">🏕️</span>
   <h1>Tricks of the Trade</h1>
-  <span>Learn to trade the smart, safe way!</span>
+  <span class="sub">Learn to trade the smart, safe way!</span>
   <span class="coins">⭐ <span id="stars">0</span> stars</span>
 </header>
 
@@ -775,6 +789,11 @@ document.getElementById("fc-flip").onclick = ()=>{ const el=document.getElementB
 /* ---------- live data ---------- */
 const LS_LIVE = "tricksofthetrade_live";
 function liveCfg(){ try { return JSON.parse(localStorage.getItem(LS_LIVE)) || {source:"sim",key:"",symbol:"AAPL"}; } catch(e){ return {source:"sim",key:"",symbol:"AAPL"}; } }
+function liveCfgFromDOM(){
+  return { source:document.getElementById("live-source").value,
+           key:document.getElementById("live-key").value.trim(),
+           symbol:(document.getElementById("live-symbol").value.trim()||"AAPL").toUpperCase() };
+}
 function applyLiveUI(){
   const c = liveCfg();
   document.getElementById("live-source").value = c.source;
@@ -786,34 +805,33 @@ document.getElementById("live-source").addEventListener("change", e=>{
   document.getElementById("live-key-row").style.display = (e.target.value==="sim") ? "none" : "flex";
 });
 function saveLive(){
-  const c = { source:document.getElementById("live-source").value,
-              key:document.getElementById("live-key").value.trim(),
-              symbol:document.getElementById("live-symbol").value.trim().toUpperCase() || "AAPL" };
+  const c = liveCfgFromDOM();
   localStorage.setItem(LS_LIVE, JSON.stringify(c));
-  // if live, tell the game to use it
   G.liveSource = c;
-  document.getElementById("live-out").innerHTML = `💾 Saved! Source: <b>${c.source==="sim"?"Practice Simulator":" "+c.source}</b>${c.source!=="sim"?` · ticker <b>${c.symbol}</b>`:""}. ${c.source!=="sim"?"The Trading Game will show this ticker's live price when you press Next Day.":"The game uses the built-in simulator."}`;
+  const src = c.source==="sim" ? "Practice Simulator" : c.source;
+  const tail = c.source!=="sim"
+    ? ` · ticker <b>${c.symbol}</b>. The Trading Game will show this ticker's live price when you press Next Day.`
+    : `. The game uses the built-in simulator.`;
+  document.getElementById("live-out").innerHTML = `💾 Saved! Source: <b>${src}</b>${tail}`;
 }
 async function fetchLivePrice(c){
   const sym = c.symbol || "AAPL";
   if(c.source==="twelvedata"){
     const u = `https://api.twelvedata.com/price?symbol=${encodeURIComponent(sym)}&apikey=${encodeURIComponent(c.key||"demo")}`;
-    const r = await fetch(u); const j = await r.json();
+    const j = await (await fetch(u)).json();
     if(j && j.price) return parseFloat(j.price);
     throw new Error(j.message || "No price returned");
   }
   if(c.source==="finnhub"){
     const u = `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(sym)}&token=${encodeURIComponent(c.key||"demo")}`;
-    const r = await fetch(u); const j = await r.json();
+    const j = await (await fetch(u)).json();
     if(j && typeof j.c==="number" && j.c>0) return parseFloat(j.c);
     throw new Error("No price (check key/symbol)");
   }
   return null; // sim
 }
 async function testLive(){
-  const c = { source:document.getElementById("live-source").value,
-              key:document.getElementById("live-key").value.trim(),
-              symbol:document.getElementById("live-symbol").value.trim().toUpperCase() || "AAPL" };
+  const c = liveCfgFromDOM();
   const out = document.getElementById("live-out");
   if(c.source==="sim"){ out.innerHTML = "✅ Practice Simulator is always ready — no connection needed!"; return; }
   if(!c.key){ out.innerHTML = "🔑 Please paste your free API key first."; return; }
@@ -828,17 +846,12 @@ async function testLive(){
   }
 }
 // make the game optionally pull a live price on Next Day
-const _origNext = document.getElementById("btn-next").onclick;
 document.getElementById("btn-next").addEventListener("click", async ()=>{
   const c = liveCfg();
   if(c.source && c.source!=="sim" && G && G.day < G.prices.length-1){
     try {
       const p = await fetchLivePrice(c);
-      if(p && p>0){
-        // replace the "current day" simulated price with live price so EMAs stay meaningful
-        G.prices[G.day] = p;
-        G.livePriceUsed = true;
-      }
+      if(p && p>0){ G.prices[G.day] = p; G.livePriceUsed = true; }
     } catch(e){ /* fall back to simulated price silently */ }
   }
 }, true);
