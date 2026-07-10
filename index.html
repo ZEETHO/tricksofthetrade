@@ -378,7 +378,9 @@
 
   <div id="print-area"></div>
 </main>
-<footer>Tricks of the Trade 🏕️ — built from the dpt_bot research. Practice money only. Not financial advice.</footer>
+<footer>Tricks of the Trade 🏕️ — built from the dpt_bot research. Practice money only. Not financial advice.
+  <span id="updated" style="display:block;margin-top:6px;opacity:.7;font-size:.82rem"></span>
+</footer>
 
 <script>
 "use strict";
@@ -1024,6 +1026,8 @@ function printFlashcards(){
 }
 
 /* ---------- boot ---------- */
+const APP_VERSION = "2026-07-17 · v9 stars";
+document.getElementById("updated").textContent = "Last updated: " + APP_VERSION;
 renderLessons(); renderQuiz(); newGame(); refreshStars(); renderFlashcards(); applyLiveUI();
 refreshRibbon(); setInterval(refreshRibbon, 20000);
 </script>
