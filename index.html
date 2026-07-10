@@ -123,6 +123,25 @@
   @keyframes fade{from{opacity:0}to{opacity:1}}
   .card-nav{display:flex; gap:12px; flex-wrap:wrap; align-items:center}
   .card-count{margin-left:auto; color:var(--muted); font-weight:800}
+  /* print / study-sheet mode */
+  #print-area{display:none}
+  @media print{
+    body{background:#fff !important}
+    header, nav, #ribbon, .controls, .card-nav, .calc-row, .big-btn, .result-box,
+    .lesson-nav, .cat-tabs, footer, .hint, .tag, #live-key-row{display:none !important}
+    main{max-width:none; padding:0}
+    .page{display:none !important}
+    #print-area{display:block !important; color:#000; font-family:"Segoe UI",system-ui,sans-serif}
+    #print-area h1{font-size:22px; margin-bottom:6px}
+    #print-area h2{font-size:16px; margin:18px 0 8px; border-bottom:2px solid #000; padding-bottom:4px}
+    #print-area .prule{font-size:13px; margin:6px 0; padding:6px 0; border-bottom:1px solid #ddd}
+    #print-area .prule b{display:block}
+    #print-area .pcard{break-inside:avoid; border:1px solid #000; border-radius:8px; padding:8px 10px; margin:6px 0}
+    #print-area .pcard .pt{font-weight:800; font-size:13px}
+    #print-area .pcard .pd{font-size:12px}
+    #print-area .pwrap{display:flex; flex-wrap:wrap; gap:10px}
+    #print-area .pcard{width:calc(50% - 5px)}
+  }
   /* live market ribbon (CHRONICLE-style server feed) */
   #ribbon{display:flex; gap:10px; flex-wrap:wrap; padding:11px 18px; background:linear-gradient(120deg,#04263b,#063a57); align-items:center; box-shadow:0 3px 12px rgba(2,48,71,.2)}
   #ribbon .tag{color:#90e0ef; font-weight:800; font-size:.8rem; margin-right:6px; letter-spacing:.5px}
@@ -261,6 +280,7 @@
     <div class="rule-card"><span class="emoji">🏛️</span><div><b>"Secret" signals usually aren't.</b> Politician trades looked exciting, but the edge disappears before the 45-day disclosure deadline. Test everything.</div></div>
     <div class="rule-card"><span class="emoji">📄</span><div><b>Paper trade for weeks before using real money.</b> If practice doesn't work, real money won't either.</div></div>
     <div class="rule-card"><span class="emoji">🐢</span><div><b>Slow is smooth, smooth is fast.</b> Most traders lose by rushing. Being patient IS the edge.</div></div>
+    <div style="margin-top:14px"><button class="big-btn blue" onclick="printRules()">🖨️ Print / Save Study Sheet (Rules)</button></div>
   </div>
 </section>
 
@@ -275,6 +295,7 @@
       <button class="big-btn blue" id="fc-prev">⬅️ Prev</button>
       <button class="big-btn" id="fc-next">Next ➡️</button>
       <button class="big-btn red" id="fc-flip">🔄 Flip</button>
+      <button class="big-btn" style="background:var(--lav);box-shadow:0 5px 0 #4e356b" onclick="printFlashcards()">🖨️ Print all</button>
       <span class="card-count" id="fc-count"></span>
     </div>
   </div>
@@ -355,6 +376,7 @@
   </div>
 </section>
 
+  <div id="print-area"></div>
 </main>
 <footer>Tricks of the Trade 🏕️ — built from the dpt_bot research. Practice money only. Not financial advice.</footer>
 
@@ -365,13 +387,15 @@ const S = JSON.parse(localStorage.getItem("tradecamp") || "{}");
 S.lessonsDone = S.lessonsDone || [];
 S.quizBest = S.quizBest || 0;
 S.gameWon = S.gameWon || false;
+S.whatifStar = S.whatifStar || false;
 function save(){ localStorage.setItem("tradecamp", JSON.stringify(S)); refreshStars(); }
-function stars(){ return S.lessonsDone.length + (S.quizBest >= 5 ? 1 : 0) + (S.gameWon ? 1 : 0); }
+function stars(){ return S.lessonsDone.length + (S.quizBest >= 5 ? 1 : 0) + (S.gameWon ? 1 : 0) + (S.whatifStar ? 1 : 0); }
+const STAR_TOTAL = 9;
 function refreshStars(){
   document.getElementById("stars").textContent = stars();
-  const pct = Math.round(stars()/8*100);
+  const pct = Math.round(stars()/STAR_TOTAL*100);
   document.getElementById("progress-fill").style.width = pct+"%";
-  document.getElementById("progress-text").textContent = stars()+" of 8 stars earned";
+  document.getElementById("progress-text").textContent = stars()+" of "+STAR_TOTAL+" stars earned";
 }
 
 /* ---------- navigation ---------- */
@@ -642,6 +666,7 @@ document.getElementById("btn-summary").onclick = ()=>{
   const r = backtestHypotheticals();
   const box = document.getElementById("signal-summary");
   if(r.n===0){ box.style.display="block"; box.innerHTML="No reversal signals appeared in this market's history. Try 🔄 New Game for a different stock path!"; return; }
+  if(!S.whatifStar){ S.whatifStar = true; save(); }
   const verdict = r.avgPct>0
     ? `On paper this strategy made money <b>on average</b> — but only won <b>${r.winRate.toFixed(0)}%</b> of trades. That's the bot's big lesson: lose often, win bigger!`
     : `On paper this strategy <b>lost money on average</b> over this particular chart. Reminder: even Ian Dunlap's rules don't win every market — that's why the real bot scored a z of 0.29 (no edge) and you MUST paper-trade for weeks.`;
@@ -650,7 +675,8 @@ document.getElementById("btn-summary").onclick = ()=>{
     Signals: <b>${r.n}</b> &nbsp;•&nbsp; Wins: <b style="color:#2a9d8f">${r.wins}</b> &nbsp;•&nbsp; Losses: <b style="color:#e76f51">${r.losses}</b><br>
     Win rate: <b>${r.winRate.toFixed(0)}%</b> &nbsp;•&nbsp; Average per trade: <b>${r.avgPct>=0?"+":""}${r.avgPct.toFixed(1)}%</b><br>
     Best: <b style="color:#2a9d8f">+${r.best.toFixed(1)}%</b> &nbsp;•&nbsp; Worst: <b style="color:#e76f51">${r.worst.toFixed(1)}%</b><br>
-    <span style="font-size:.92rem">${verdict}</span>`;
+    <span style="font-size:.92rem">${verdict}</span><br>
+    <span style="color:#ffd166;font-weight:800">⭐ Strategy Analyst star earned! You read the scorecard like a pro.</span>`;
 };
 function endGame(){
   G.over = true;
@@ -698,7 +724,17 @@ const QUIZ = [
  {q:"Copying politicians' stock trades — what did the research find?", a:["Guaranteed riches","The edge is gone before they must disclose (45 days)","Illegal to even look","Works only for senators"], c:1,
   why:"The signal decays to zero before the legal disclosure deadline. Test every 'secret sauce.'"},
  {q:"Before trading real money you should…", a:["Watch one video","Paper trade for weeks","Ask a friend","Flip a coin"], c:1,
-  why:"If pretend-money trading doesn't work, real money won't either."}
+  why:"If pretend-money trading doesn't work, real money won't either."},
+ {q:"Earn Your Leisure's big idea is that building wealth is mostly about…", a:["Picking one lucky stock","Learning how money moves, then OWNING something","Saving every dollar forever","Avoiding all risk"], c:1,
+  why:"EYL teaches: a job trades time for money (capped), but ownership — a business, a stock — is what compounds."},
+ {q:"A share of stock is really…", a:["A bet with the casino","A tiny piece of OWNERSHIP in a company","A free coupon","A tax bill"], c:1,
+  why:"When you buy a share you own a slice of the business — that's why EYL says 'be an owner, not just a saver.'"},
+ {q:"Rich people often use credit as a…", a:["Free money to gamble","Tool to access opportunity — handled carefully","Something to ignore completely","Reason to quit their job"], c:1,
+  why:"EYL's 'Turn Your Credit Into Cash' shows credit done right opens doors. The 1% risk rule here is the same spirit: only risk what you can afford."},
+ {q:"Why do serious investors care about business STRUCTURE (LLC vs Corporation)?", a:["It changes taxes, risk & ability to raise money","It's just paperwork, no effect","Corporations are illegal","Only the logo matters"], c:0,
+  why:"EYL guests (Mrs. Pinky's Piggy Bank) note structure shifts your taxes and protection. Smart traders think about structure, not just tickers."},
+ {q:"The saying 'what you KEEP matters more than what you MAKE' is about…", a:["Taxes & fees eating returns","Never selling","Hiding money","Luck"], c:0,
+  why:"EYL's tax episodes (Karlton Dennis) show patient, long-term holds are often taxed lighter — the bot's +20% target practices that patience too."}
 ];
 let qi = 0, qScore = 0;
 function renderQuiz(){
@@ -961,6 +997,30 @@ async function refreshRibbon(){
   } catch(e){
     status.innerHTML = `<span class="live-dot" style="background:#e76f51"></span>live feed unavailable`;
   }
+}
+
+/* ---------- print / study sheets ---------- */
+function printSheet(html){
+  const pa = document.getElementById("print-area");
+  pa.innerHTML = html;
+  window.print();
+}
+function printRules(){
+  const rules = [...document.querySelectorAll("#page-rules .rule-card")].map(rc=>{
+    return `<div class="prule"><b>${rc.querySelector("b")?rc.querySelector("b").textContent:""}</b>${rc.textContent.replace(rc.querySelector("b")?rc.querySelector("b").textContent:"","")}</div>`;
+  }).join("");
+  printSheet(`<h1>🛡️ Tricks of the Trade — Golden Rules</h1><h2>The rules that keep your money safe</h2>${rules}<p style="margin-top:16px;font-size:11px">Practice money only. Not financial advice.</p>`);
+}
+function printFlashcards(){
+  let cards = "";
+  Object.keys(FLASHCARDS).forEach(cat=>{
+    cards += `<h2>${cat.toUpperCase()}</h2><div class="pwrap">`;
+    FLASHCARDS[cat].forEach(c=>{
+      cards += `<div class="pcard"><div class="pt">${c.t}</div><div class="pd">${c.d}</div></div>`;
+    });
+    cards += `</div>`;
+  });
+  printSheet(`<h1>🃏 Tricks of the Trade — Flashcard Study Sheet</h1>${cards}<p style="margin-top:16px;font-size:11px">Practice money only. Not financial advice.</p>`);
 }
 
 /* ---------- boot ---------- */
