@@ -200,7 +200,9 @@
       <button class="big-btn red" id="btn-sell" disabled>💸 Sell</button>
       <button class="big-btn" style="background:var(--lav); box-shadow:0 5px 0 #6f5fa3" id="btn-reset">🔄 New Game</button>
       <button class="big-btn blue" id="btn-signals" style="background:#2a9d8f;box-shadow:0 5px 0 #1f7a70">👁 Show signals</button>
+      <button class="big-btn blue" id="btn-summary" style="background:#6a4c93;box-shadow:0 5px 0 #4e356b">📊 What-if summary</button>
     </div>
+    <div class="result-box" id="signal-summary" style="display:none; background:rgba(106,76,147,.18); border:1px solid #6a4c93"></div>
     <div class="result-box" id="game-msg">Press "Next Day" a few times to watch the price move. When you buy, a safety stop-loss is set 3% below your price automatically — just like the real bot!</div>
   </div>
 </section>
@@ -432,16 +434,44 @@ function computeHypotheticals(){
   const e8 = ema(arr, 8), e21 = ema(arr, 21);
   const sigs = [];
   for(let i=21; i<n-1; i++){
-    const below = arr[i-1] < e8[i-1] && arr[i-1] < e21[i-1];   // was below both EMAs
-    const reclaim = arr[i] >= e8[i];                            // now back above fast EMA
-    const fell = arr[i] <= arr[i-1]*1.20;                       // came off at least ~20% from a recent high (cheap)
-    if(below && reclaim && fell){
+    // was below both EMAs
+    const below = arr[i-1] < e8[i-1] && arr[i-1] < e21[i-1];
+    // now back above the fast EMA (the reclaim / reversal trigger)
+    const reclaim = arr[i] >= e8[i];
+    // "hammered": price is >=20% below its highest close of the last 60 days
+    let peak60 = arr[i];
+    for(let k=Math.max(0,i-60); k<i; k++) peak60 = Math.max(peak60, arr[k]);
+    const drawdown = (peak60 - arr[i]) / peak60;
+    if(below && reclaim && drawdown >= 0.20){
       const entry = arr[i];
       sigs.push({ day:i, entry,
         stop: entry*0.97, be: entry*1.12, target: entry*1.20 });
     }
   }
   return sigs;
+}
+// Replay every hypothetical signal through the bot's EXACT exit rules and tally the outcome.
+function backtestHypotheticals(){
+  const arr = G.prices, sigs = computeHypotheticals();
+  let wins=0, losses=0, totalPct=0, best=0, worst=0;
+  sigs.forEach(s=>{
+    let stop=s.stop, peak=s.entry, exitPct=null;
+    for(let i=s.day+1; i<arr.length; i++){
+      const p = arr[i];
+      peak = Math.max(peak, p);
+      if(peak >= s.entry*1.12) stop = Math.max(s.entry, peak*0.95); // ratchet to BE then trail
+      if(p <= stop){ exitPct = (stop - s.entry)/s.entry; break; }     // stopped out
+      if(p >= s.entry*1.20){ exitPct = 0.20; break; }                 // +20% target
+    }
+    if(exitPct===null) exitPct = (arr[arr.length-1]-s.entry)/s.entry; // still open at end
+    totalPct += exitPct; best=Math.max(best,exitPct); worst=Math.min(worst,exitPct);
+    if(exitPct>=0) wins++; else losses++;
+  });
+  const n = sigs.length;
+  return { n, wins, losses,
+    winRate: n? wins/n*100 : 0,
+    avgPct: n? totalPct/n*100 : 0,
+    best: best*100, worst: worst*100 };
 }
 function updateGame(){
   const p = price();
@@ -549,6 +579,20 @@ document.getElementById("btn-signals").onclick = ()=>{
   document.getElementById("btn-signals").textContent = G.showSignals ? "👁 Hide signals" : "👁 Show signals";
   drawChart();
   if(!G.showSignals) msg("Signals hidden. Turn them back on to see where the bot's rules would have entered and exited.");
+};
+document.getElementById("btn-summary").onclick = ()=>{
+  const r = backtestHypotheticals();
+  const box = document.getElementById("signal-summary");
+  if(r.n===0){ box.style.display="block"; box.innerHTML="No reversal signals appeared in this market's history. Try 🔄 New Game for a different stock path!"; return; }
+  const verdict = r.avgPct>0
+    ? `On paper this strategy made money <b>on average</b> — but only won <b>${r.winRate.toFixed(0)}%</b> of trades. That's the bot's big lesson: lose often, win bigger!`
+    : `On paper this strategy <b>lost money on average</b> over this particular chart. Reminder: even Ian Dunlap's rules don't win every market — that's why the real bot scored a z of 0.29 (no edge) and you MUST paper-trade for weeks.`;
+  box.style.display="block";
+  box.innerHTML = `<b>📊 What if you'd traded every signal on this chart?</b><br>
+    Signals: <b>${r.n}</b> &nbsp;•&nbsp; Wins: <b style="color:#2a9d8f">${r.wins}</b> &nbsp;•&nbsp; Losses: <b style="color:#e76f51">${r.losses}</b><br>
+    Win rate: <b>${r.winRate.toFixed(0)}%</b> &nbsp;•&nbsp; Average per trade: <b>${r.avgPct>=0?"+":""}${r.avgPct.toFixed(1)}%</b><br>
+    Best: <b style="color:#2a9d8f">+${r.best.toFixed(1)}%</b> &nbsp;•&nbsp; Worst: <b style="color:#e76f51">${r.worst.toFixed(1)}%</b><br>
+    <span style="font-size:.92rem">${verdict}</span>`;
 };
 function endGame(){
   G.over = true;
